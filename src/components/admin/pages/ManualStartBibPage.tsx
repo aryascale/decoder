@@ -156,6 +156,46 @@ export default function ManualStartBibPage({ allRows, onDataVersionBump, eventId
     }
   };
 
+  const assignCurrentBrowserTime = async (row: MasterRow) => {
+    const d = new Date();
+    const pad = (n: number, len = 2) => String(n).padStart(len, "0");
+    const DD = pad(d.getDate());
+    const MM = pad(d.getMonth() + 1);
+    const YYYY = d.getFullYear();
+    const HH = pad(d.getHours());
+    const mm = pad(d.getMinutes());
+    const ss = pad(d.getSeconds());
+    const SSS = pad(d.getMilliseconds(), 3);
+    
+    // DD:MM:YYYY HH:MM:SS:SSS
+    const finalTime = `${DD}:${MM}:${YYYY} ${HH}:${mm}:${ss}:${SSS}`;
+
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/manual-start-bib?eventId=${eventId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bib: row.bib,
+          epc: row.epc,
+          timeStr: finalTime,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Gagal menyimpan Manual Start per-BIB");
+      }
+
+      await loadManualStarts();
+      onDataVersionBump();
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const removeManualStart = async (id: string) => {
     if (!confirm("Hapus Manual Start ini? Waktu pelari akan kembali pakai global / kategori.")) return;
 
@@ -288,11 +328,9 @@ export default function ManualStartBibPage({ allRows, onDataVersionBump, eventId
                                 </>
                               ) : (
                                 <button
-                                  className="btn ghost sm"
-                                  onClick={() => {
-                                    setSelectedBib(r.bib);
-                                    setTimeStr("06:00:00");
-                                  }}
+                                  className="btn ghost sm text-blue-600 border border-blue-200"
+                                  disabled={saving}
+                                  onClick={() => assignCurrentBrowserTime(r)}
                                 >
                                   + Assign Start
                                 </button>
@@ -384,11 +422,9 @@ export default function ManualStartBibPage({ allRows, onDataVersionBump, eventId
                         </>
                       ) : (
                         <button
-                          className="btn ghost w-full text-xs font-bold uppercase"
-                          onClick={() => {
-                            setSelectedBib(r.bib);
-                            setTimeStr("06:00:00");
-                          }}
+                          className="btn ghost w-full text-xs font-bold uppercase text-blue-600 border border-blue-200"
+                          disabled={saving}
+                          onClick={() => assignCurrentBrowserTime(r)}
                         >
                           + Assign Start Time
                         </button>

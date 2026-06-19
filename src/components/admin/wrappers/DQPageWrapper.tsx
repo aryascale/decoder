@@ -79,7 +79,12 @@ export default function DQPageWrapper() {
         });
 
         function buildOverrideFromFinishDate(finishMs: number, timeStr: string): number | null {
-          const m = timeStr.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\.(\d{1,3}))?/);
+          if (!timeStr) return null;
+          if (timeStr.includes(" ") || timeStr.includes("T")) {
+             const parsed = parseTimeToMs(timeStr);
+             if (parsed && parsed.ms) return parsed.ms;
+          }
+          const m = timeStr.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?(?:[:\.](\d{1,3}))?/);
           if (!m) return null;
 
           const h = Number(m[1] || 0);
