@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body, #map {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: system-ui, -apple-system, sans-serif;
+      color: #6b7280;
+    }
+    .leaflet-control-attribution {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="loading" class="loading">Loading map...</div>
+
+  <script>
+    // Get URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get('eventId');
+    const lat = parseFloat(params.get('lat')) || null;
+    const lng = parseFloat(params.get('lng')) || null;
+    const hasGpx = params.get('hasGpx') === '1';
+
+    // Initialize map
+    const defaultCenter = lat && lng ? [lat, lng] : [-2.5, 118];
+    const defaultZoom = lat && lng ? 13 : 5;
+
+    const map = L.map('map', {
+      center: defaultCenter,
+      zoom: defaultZoom,
+      zoomControl: true
+    });
+
+    // Add CartoDB Voyager tiles
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+      maxZoom: 19
+    }).addTo(map);
+
+    // Create custom marker icon
+    function createMarkerIcon(color) {
+      return L.divIcon({
+        className: 'custom-marker',
+        html: '<div style="' +
+          'background-color: ' + color + ';' +
+          'width: 24px;' +
+          'height: 24px;' +
+          'border-radius: 50% 50% 50% 0;' +
+          'transform: rotate(-45deg);' +
+          'border: 3px solid white;' +
+          'box-shadow: 0 2px 8px rgba(0,0,0,0.3);' +
+          '"></div>',
+        iconSize: [24, 24],
+        iconAnchor: [12, 24],
+        popupAnchor: [0, -24]
+      });
+    }
+
+    // Add event location marker
+    if (lat && lng) {
+      const marker = L.marker([lat, lng], {
+        icon: createMarkerIcon('#FF383C')
+      });
+      marker.bindPopup('<div style="font-family: system-ui; padding: 8px;"><strong>Event Location</strong></div>');
+      marker.addTo(map);
+    }
+
+    // Load and display GPX route
+    if (hasGpx && eventId) {
+      fetch('/uploads/events/' + eventId + '/gpx/route.gpx')
+        .then(response => {
+          if (!response.ok) throw new Error('GPX not found');
+          return response.text();
+        })
+        .then(gpxText => {
+          const parser = new DOMParser();
+          const gpxDoc = parser.parseFromString(gpxText, 'text/xml');
+
+          // Parse track points
+          const trackPoints = [];
+          const trkpts = gpxDoc.querySelectorAll('trkpt');
+
+          trkpts.forEach(function(pt) {
+            const ptLat = parseFloat(pt.getAttribute('lat'));
+            const ptLon = parseFloat(pt.getAttribute('lon'));
+            if (ptLat && ptLon) {
+              trackPoints.push([ptLat, ptLon]);
+            }
+          });
+
+          // Also check for route points (rtept)
+          if (trackPoints.length === 0) {
+            const rtepts = gpxDoc.querySelectorAll('rtept');
+            rtepts.forEach(function(pt) {
+              const ptLat = parseFloat(pt.getAttribute('lat'));
+              const ptLon = parseFloat(pt.getAttribute('lon'));
+              if (ptLat && ptLon) {
+                trackPoints.push([ptLat, ptLon]);
+              }
+            });
+          }
+
+          if (trackPoints.length > 0) {
+            // Draw the route polyline
+            const polyline = L.polyline(trackPoints, {
+              color: '#FF383C',
+              weight: 4,
+              opacity: 0.8,
+              lineJoin: 'round'
+            }).addTo(map);
+
+            // Add start marker
+            const startIcon = L.divIcon({
+              className: 'start-marker',
+              html: '<div style="' +
+                'background-color: #22c55e;' +
+                'width: 20px;' +
+                'height: 20px;' +
+                'border-radius: 50%;' +
+                'border: 3px solid white;' +
+                'box-shadow: 0 2px 6px rgba(0,0,0,0.3);' +
+                'display: flex;' +
+                'align-items: center;' +
+                'justify-content: center;' +
+                'font-size: 10px;' +
+                'font-weight: bold;' +
+                'color: white;' +
+                '">S</div>',
+              iconSize: [20, 20],
+              iconAnchor: [10, 10]
+            });
+            L.marker(trackPoints[0], { icon: startIcon })
+              .bindPopup('<strong>Start</strong>')
+              .addTo(map);
+
+            // Add finish marker
+            const finishIcon = L.divIcon({
+              className: 'finish-marker',
+              html: '<div style="' +
+                'background-color: #dc2626;' +
+                'width: 20px;' +
+                'height: 20px;' +
+                'border-radius: 50%;' +
+                'border: 3px solid white;' +
+                'box-shadow: 0 2px 6px rgba(0,0,0,0.3);' +
+                'display: flex;' +
+                'align-items: center;' +
+                'justify-content: center;' +
+                'font-size: 10px;' +
+                'font-weight: bold;' +
+                'color: white;' +
+                '">F</div>',
+              iconSize: [20, 20],
+              iconAnchor: [10, 10]
+            });
+            L.marker(trackPoints[trackPoints.length - 1], { icon: finishIcon })
+              .bindPopup('<strong>Finish</strong>')
+              .addTo(map);
+
+            // Fit map to show the entire route
+            map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
+          }
+
+          document.getElementById('loading').style.display = 'none';
+        })
+        .catch(error => {
+          console.error('Error loading GPX:', error);
+          document.getElementById('loading').textContent = 'Could not load route';
+          setTimeout(() => {
+            document.getElementById('loading').style.display = 'none';
+          }, 2000);
+        });
+    } else {
+      document.getElementById('loading').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

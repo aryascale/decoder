@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Menghindari index halaman admin
+Disallow: /admin/
+Disallow: /manualtiming/
+
+Sitemap: /sitemap.xml

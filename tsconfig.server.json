@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "outDir": "./dist-server",
+    "rootDir": ".",
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "declaration": false,
+    "sourceMap": false
+  },
+  "include": [
+    "server.ts",
+    "api/**/*.ts",
+    "src/lib/prisma.ts",
+    "src/lib/localDb.ts",
+    "src/lib/fileStorage.ts",
+    "src/lib/defaultCategories.ts",
+    "src/lib/geocoding.ts",
+    "src/lib/time.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

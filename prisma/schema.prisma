@@ -1,0 +1,278 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "darwin-arm64"]
+  engineType    = "binary"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Event {
+  id                 String              @id @default(uuid())
+  name               String
+  slug               String              @unique
+  description        String?
+  eventDate          DateTime
+  location           String?
+  latitude           Float?
+  longitude          Float?
+  gpxFile            String?
+  status             String              @default("upcoming")
+  isActive           Boolean             @default(true)
+  cutoffMs           Int?
+  categoryStartTimes Json?
+  logoUrl            String?
+  bannerUrl          String?
+  homeImageUrl        String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  bibCustomPrice     Int                 @default(0)
+  tshirtSizes        String?
+  isDraft            Boolean             @default(false)
+  isDeleted          Boolean             @default(false)
+  publishAt          DateTime?
+  content            Json?
+  banners            Banner[]
+  categories         Category[]
+  registrations      EventRegistration[]
+  supportTickets     SupportTicket[]
+  decoderLogs        DecoderLog[]
+  checkpoints        Checkpoint[]
+  runnerRecords      RunnerRecord[]
+}
+
+model Category {
+  id            String              @id @default(uuid())
+  name          String
+  eventId       String
+  order         Int                 @default(0)
+  createdAt     DateTime            @default(now())
+  price         Int                 @default(0)
+  quota         Int                 @default(0)
+  isHidden      Boolean             @default(false)
+  event         Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  registrations EventRegistration[]
+
+  @@unique([eventId, name])
+  @@index([eventId])
+}
+
+model Banner {
+  id        String   @id @default(uuid())
+  eventId   String
+  imageUrl  String
+  alt       String?
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+}
+
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  username        String   @unique
+  password        String?
+  name            String?
+  phoneNumber     String?
+  isPhoneVerified Boolean  @default(false)
+  isEmailVerified Boolean  @default(false)
+  googleId        String?  @unique
+  role            String   @default("user")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model EventRegistration {
+  id             String    @id @default(uuid())
+  eventId        String
+  categoryId     String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  bibName        String?
+  bibNumber      String?
+  bloodType      String?
+  email          String
+  emergencyName  String?
+  emergencyPhone String?
+  gender         String
+  grossAmount    Int       @default(0)
+  name           String
+  notes          String?   @db.Text
+  orderId        String
+  paidAt         DateTime?
+  paymentMethod  String?
+  paymentStatus  String    @default("pending")
+  phoneNumber    String
+  snapToken      String?
+  snapUrl        String?
+  tshirtSize     String?
+  dateOfBirth    DateTime?
+  customData     Json?
+  category       Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  event          Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([email, eventId])
+  @@index([eventId])
+  @@index([categoryId])
+  @@index([orderId])
+  @@index([paymentStatus])
+}
+
+model EmailOtp {
+  id        String   @id @default(uuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  eventId   String?
+  action    String
+  detail    String?  @db.Text
+  actor     String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model RegistrationField {
+  id        String   @id @default(uuid())
+  eventId   String
+  label     String
+  type      String   @default("text")
+  required  Boolean  @default(false)
+  options   String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
+}
+
+model TshirtInventory {
+  id      String @id @default(uuid())
+  eventId String
+  size    String
+  quota   Int    @default(0)
+  sold    Int    @default(0)
+  width   String?
+  height  String?
+
+  @@unique([eventId, size])
+  @@index([eventId])
+}
+
+model SupportTicket {
+  id              String   @id @default(uuid())
+  eventId         String?
+  ticketNumber    String   @unique
+  name            String
+  email           String
+  phoneNumber     String?
+  category        String
+  subject         String
+  description     String   @db.Text
+  status          String   @default("open") // open, in_progress, resolved
+  priority        String   @default("medium")
+  resolvedAt      DateTime?
+  resolvedBy      String?
+  resolutionNotes String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  event           Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([status])
+  @@index([ticketNumber])
+}
+
+model Penalty {
+  id        String   @id @default(uuid())
+  eventId   String
+  bib       String
+  epc       String
+  hours     Int      @default(0)
+  minutes   Int      @default(0)
+  seconds   Int      @default(0)
+  penaltyMs Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([eventId, epc])
+  @@index([eventId])
+  @@index([epc])
+}
+
+model RunnerStatus {
+  id        String   @id @default(uuid())
+  eventId   String
+  epc       String
+  bib       String?
+  isDQ      Boolean  @default(false)
+  isHidden  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([eventId, epc])
+  @@index([eventId])
+}
+
+model DecoderLog {
+  id        String   @id @default(uuid())
+  eventId   String
+  epc       String   // The RFID / BIB tag
+  timestamp DateTime // The exact time recorded by decoder
+  readerId  String?  // ID or IP of the decoder
+  antenna   String?  // Antenna number
+  createdAt DateTime @default(now())
+
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([epc])
+  @@index([timestamp])
+}
+
+model Checkpoint {
+  id        String   @id @default(uuid())
+  eventId   String
+  name      String
+  identitas String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  records   RunnerRecord[]
+
+  @@unique([eventId, identitas])
+  @@index([eventId])
+}
+
+model RunnerRecord {
+  id           String     @id @default(uuid())
+  eventId      String
+  epc          String
+  checkpointId String
+  time         DateTime
+  createdAt    DateTime   @default(now())
+
+  checkpoint   Checkpoint @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
+  event        Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, epc, checkpointId])
+  @@index([eventId])
+  @@index([epc])
+}

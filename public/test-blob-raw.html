@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hari BPR-BPRS Nasional 2026 — Fun Walk Bogor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:  #0a2342;
+      --blue:  #1565c0;
+      --sky:   #29b6f6;
+      --red:   #e53935;
+      --black: #111111;
+      --white: #ffffff;
+      --offwhite: #f7f9fc;
+      --text:  #1a2b45;
+      --muted: #5a7490;
+      --border: #e2e8f0;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--white);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      min-height: 100svh;
+      background: linear-gradient(140deg, #0a2342 0%, #1565c0 55%, #1e88e5 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 24px 80px;
+      overflow: hidden;
+    }
+
+    /* subtle grid texture */
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+    }
+
+    /* red accent bar top */
+    .hero-redbar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 5px;
+      background: var(--red);
+    }
+
+    .hero-badge {
+      position: relative;
+      z-index: 2;
+      display: inline-block;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.3);
+      color: rgba(255,255,255,.9);
+      font-size: .7rem;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      padding: 6px 20px;
+      border-radius: 999px;
+      margin-bottom: 24px;
+    }
+
+    .hero-eyebrow {
+      position: relative;
+      z-index: 2;
+      font-size: .75rem;
+      font-weight: 800;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--sky);
+      margin-bottom: 10px;
+    }
+
+    .hero-title {
+      position: relative;
+      z-index: 2;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4.5rem, 18vw, 10rem);
+      line-height: .9;
+      color: var(--white);
+      letter-spacing: .03em;
+    }
+    .hero-title .red { color: var(--red); }
+
+    .hero-subtitle {
+      position: relative;
+      z-index: 2;
+      margin-top: 16px;
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      font-weight: 700;
+      color: rgba(255,255,255,.8);
+    }
+
+    /* date strip */
+    .hero-strip {
+      position: relative;
+      z-index: 2;
+      display: inline-flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: stretch;
+      gap: 0;
+      margin-top: 36px;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,.3);
+    }
+    .strip-block {
+      padding: 14px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .strip-block.s-red   { background: var(--red); }
+    .strip-block.s-white { background: var(--white); }
+    .strip-block.s-navy  { background: var(--navy); }
+    .strip-block .s-label {
+      font-size: .6rem; font-weight: 800; letter-spacing: .15em;
+      text-transform: uppercase; opacity: .7;
+    }
+    .strip-block .s-val {
+      font-size: .92rem; font-weight: 900; line-height: 1.2;
+    }
+    .strip-block.s-red   .s-label, .strip-block.s-red   .s-val { color: #fff; }
+    .strip-block.s-white .s-label { color: var(--muted); }
+    .strip-block.s-white .s-val   { color: var(--navy); }
+    .strip-block.s-navy  .s-label, .strip-block.s-navy  .s-val { color: rgba(255,255,255,.85); }
+
+    /* orgs */
+    .hero-orgs {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 36px;
+    }
+    .org-chip {
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.25);
+      color: rgba(255,255,255,.85);
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      padding: 5px 14px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    /* wave */
+    .hero-wave {
+      position: absolute;
+      bottom: -1px; left: 0; width: 100%; overflow: hidden; line-height: 0; z-index: 3;
+    }
+    .hero-wave svg { display: block; width: 100%; height: 52px; }
+
+    
+
+    /* ── SECTION SHELL ── */
+    .section { padding: 64px 24px; background: var(--white); }
+    .section--off { background: var(--offwhite); }
+    .container { max-width: 900px; margin: 0 auto; }
+
+    .section-label {
+      font-size: .65rem; font-weight: 800; letter-spacing: .2em;
+      text-transform: uppercase; color: var(--red); margin-bottom: 6px;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2rem, 6vw, 3rem);
+      color: var(--black);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .section-title span { color: var(--blue); }
+    .divider {
+      width: 48px; height: 3px;
+      background: var(--red);
+      border-radius: 99px;
+      margin-bottom: 36px;
+    }
+
+    /* ── INFO CARDS ── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .info-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .info-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+    }
+    .info-card:nth-child(1)::before { background: var(--blue); }
+    .info-card:nth-child(2)::before { background: var(--red); }
+    .info-card:nth-child(3)::before { background: var(--black); }
+    .info-card:nth-child(4)::before { background: var(--sky); }
+    .info-card:nth-child(5)::before { background: var(--red); }
+    .info-card:nth-child(6)::before { background: var(--blue); }
+    .info-card:hover { transform: translateY(-3px); box-shadow: 0 10px 36px rgba(10,35,66,.1); }
+
+    .ic-icon { font-size: 1.5rem; margin-bottom: 4px; }
+    .ic-label { font-size: .63rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+    .ic-value { font-size: .95rem; font-weight: 800; color: var(--navy); line-height: 1.3; }
+
+    /* ── PURPOSE ── */
+    .purpose-body { font-size: .97rem; line-height: 1.82; color: var(--text); }
+    .purpose-body p + p { margin-top: 14px; }
+
+    .highlight-box {
+      border-left: 4px solid var(--red);
+      background: #fff5f5;
+      padding: 18px 22px;
+      border-radius: 0 10px 10px 0;
+      margin: 28px 0;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--black);
+      line-height: 1.6;
+    }
+
+    .goal-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+    .goal-list li { display: flex; gap: 14px; align-items: flex-start; }
+    .goal-list .bullet {
+      flex-shrink: 0;
+      width: 26px; height: 26px;
+      background: var(--navy);
+      color: #fff;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .7rem; font-weight: 900;
+      margin-top: 3px;
+    }
+    .goal-list p { font-size: .93rem; line-height: 1.6; }
+
+    /* ── AGENDA ── */
+    .agenda-wrap {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .agenda-wrap::before {
+      content: '';
+      position: absolute;
+      left: 90px;
+      top: 8px; bottom: 8px;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--blue), var(--sky));
+      border-radius: 2px;
+    }
+
+    .ag-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      padding: 14px 0;
+    }
+    .ag-time {
+      flex-shrink: 0;
+      width: 86px;
+      text-align: right;
+      font-size: .72rem;
+      font-weight: 800;
+      color: var(--blue);
+      line-height: 1.3;
+      padding-top: 3px;
+    }
+    .ag-dot {
+      flex-shrink: 0;
+      width: 12px; height: 12px;
+      background: var(--white);
+      border: 2.5px solid var(--blue);
+      border-radius: 50%;
+      margin-top: 4px;
+      z-index: 1;
+    }
+    .ag-row.star .ag-dot {
+      background: var(--red);
+      border-color: var(--red);
+      width: 16px; height: 16px;
+      margin-top: 2px;
+      box-shadow: 0 0 0 4px rgba(229,57,53,.15);
+    }
+    .ag-row.star .ag-label { font-weight: 900; color: var(--black); }
+    .ag-row.star .ag-time  { color: var(--red); }
+
+    .ag-label {
+      font-size: .93rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .ag-tag {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: .65rem;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 2px 10px;
+      border-radius: 999px;
+      background: var(--red);
+      color: #fff;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy);
+      color: rgba(255,255,255,.5);
+      text-align: center;
+      padding: 28px 24px;
+      font-size: .78rem;
+      font-weight: 600;
+      border-top: 4px solid var(--red);
+    }
+    footer strong { color: rgba(255,255,255,.88); }
+
+    /* mobile */
+    @media (max-width: 520px) {
+      .hero-strip { border-radius: 12px; }
+      .strip-block { padding: 12px 16px; }
+      .agenda-wrap::before { left: 70px; }
+      .ag-time { width: 66px; font-size: .67rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════
+     HERO
+══════════════════════════════ -->
+<header class="hero">
+  <div class="hero-redbar"></div>
+
+  <div class="hero-badge">DPD Perbarindo DKI Jaya &amp; Sekitarnya</div>
+  <p class="hero-eyebrow">Hari BPR–BPRS Nasional 2026</p>
+
+  <h1 class="hero-title">FUN<br><span class="red">WALK</span></h1>
+  <p class="hero-subtitle">Langkah BPR-BPRS Untuk Negeri &nbsp;·&nbsp; Ekonomi Rakyat Maju</p>
+
+  <div class="hero-strip">
+    <div class="strip-block s-red">
+      <span class="s-label">Hari</span>
+      <span class="s-val">Minggu</span>
+    </div>
+    <div class="strip-block s-white">
+      <span class="s-label">Tanggal</span>
+      <span class="s-val">7 Juni 2026</span>
+    </div>
+    <div class="strip-block s-navy">
+      <span class="s-label">Waktu</span>
+      <span class="s-val">06.00 WIB</span>
+    </div>
+    <div class="strip-block s-white">
+      <span class="s-label">Lokasi</span>
+      <span class="s-val">Lap. IPB Baranangsiang, Bogor</span>
+    </div>
+  </div>
+
+  <div class="hero-orgs">
+    <span class="org-chip">Perbarindo</span>
+    <span class="org-chip">Bank Indonesia</span>
+    <span class="org-chip">OJK</span>
+    <span class="org-chip">LPS</span>
+    <span class="org-chip">BPR &amp; BPRS</span>
+  </div>
+
+  <div class="hero-wave">
+    <svg viewBox="0 0 1440 52" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,32 C480,60 960,0 1440,32 L1440,52 L0,52 Z" fill="#ffffff"/>
+    </svg>
+  </div>
+</header>
+
+
+<!-- ══════════════════════════════
+     DETAIL KEGIATAN
+══════════════════════════════ -->
+<section class="section">
+  <div class="container">
+    <p class="section-label">Detail Acara</p>
+    <h2 class="section-title">Informasi <span>Kegiatan</span></h2>
+    <div class="divider"></div>
+
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="ic-icon">📅</div>
+        <div class="ic-label">Hari &amp; Tanggal</div>
+        <div class="ic-value">Minggu, 7 Juni 2026</div>
+      </div>
+      <div class="info-card">
+        <div class="ic-icon">⏰</div>
+        <div class="ic-label">Waktu</div>
+        <div class="ic-value">06.00 WIB — Selesai</div>
+      </div>
+      <div class="info-card">
+        <div class="ic-icon">📍</div>
+        <div class="ic-label">Tempat</div>
+        <div class="ic-value">Lapangan IPB Baranangsiang, Kota Bogor</div>
+      </div>
+      <div class="info-card">
+        <div class="ic-icon">🏃</div>
+        <div class="ic-label">Rute Fun Walk</div>
+        <div class="ic-value">4 Kilometer</div>
+      </div>
+      <div class="info-card">
+        <div class="ic-icon">🎯</div>
+        <div class="ic-label">Target Peserta</div>
+        <div class="ic-value">4.000 Orang</div>
+      </div>
+      <div class="info-card">
+        <div class="ic-icon">🏦</div>
+        <div class="ic-label">Penyelenggara</div>
+        <div class="ic-value">DPD Perbarindo DKI Jaya &amp; Sekitarnya</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════
+     MAKSUD & TUJUAN
+══════════════════════════════ -->
+<section class="section section--off">
+  <div class="container">
+    <p class="section-label">Latar Belakang</p>
+    <h2 class="section-title">Maksud &amp; <span>Tujuan</span></h2>
+    <div class="divider"></div>
+
+    <div class="purpose-body">
+      <p>
+        PERBARINDO merupakan Perhimpunan Bank Perekonomian Rakyat Indonesia yang bersifat independen berdasarkan Pancasila dan UUD 1945. Selama lebih dari 25 tahun, Perbarindo berperan aktif dalam menunjang pertumbuhan industri BPR. DPD Perbarindo DKI Jaya &amp; Sekitarnya saat ini memiliki 9 Komisariat (DPK) dengan kurang lebih 176 anggota BPR-BPRS.
+      </p>
+      <p>
+        Industri BPR-BPRS memiliki peran strategis dalam mendorong perkembangan usaha mikro, kecil, dan menengah (UMKM). Namun tingkat pengenalan masyarakat terhadap BPR-BPRS masih dirasakan sangat kurang—masyarakat masih menganggap BPR-BPRS hanya sebagai tempat meminjam uang.
+      </p>
+
+      <div class="highlight-box">
+        "Hari BPR-BPRS Nasional merupakan momentum strategis untuk meningkatkan literasi dan awareness masyarakat terhadap peran serta manfaat industri BPR-BPRS bagi ekonomi kerakyatan."
+      </div>
+
+      <p>Acara diselenggarakan serentak di seluruh Indonesia. Pusat kegiatan wilayah DKI &amp; Sekitarnya dipusatkan di Kota Bogor dengan target peserta 4.000 orang.</p>
+
+      <ul class="goal-list" style="margin-top:28px;">
+        <li>
+          <span class="bullet">1</span>
+          <p>Mensosialisasikan perubahan nama menjadi <strong>Bank Perekonomian Rakyat (BPR)</strong> dan <strong>Bank Perekonomian Rakyat Syariah (BPRS)</strong>.</p>
+        </li>
+        <li>
+          <span class="bullet">2</span>
+          <p>Memperkuat branding positif BPR-BPRS di mata masyarakat sehingga mendorong minat penggunaan jasa dan produk BPR-BPRS.</p>
+        </li>
+        <li>
+          <span class="bullet">3</span>
+          <p>Terinspirasi dari semangat Hari Kebangkitan Nasional (20 Mei) untuk membangkitkan dan menumbuhkan industri BPR-BPRS di seluruh Indonesia.</p>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════
+     SUSUNAN ACARA
+══════════════════════════════ -->
+<section class="section">
+  <div class="container">
+    <p class="section-label">Program Kegiatan</p>
+    <h2 class="section-title">Susunan <span>Acara</span></h2>
+    <div class="divider"></div>
+
+    <div class="agenda-wrap">
+
+      <div class="ag-row">
+        <div class="ag-time">06.00 – 06.30</div>
+        <div class="ag-dot"></div>
+        <div class="ag-label">Pemanasan Peserta</div>
+      </div>
+
+      <div class="ag-row">
+        <div class="ag-time">06.30 – 07.00</div>
+        <div class="ag-dot"></div>
+        <div class="ag-label">Persiapan Fun Walk 4 KM</div>
+      </div>
+
+      <div class="ag-row">
+        <div class="ag-time">07.00 – 07.05</div>
+        <div class="ag-dot"></div>
+        <div class="ag-label">Opening oleh MC</div>
+      </div>
+
+      <div class="ag-row">
+        <div class="ag-time">07.05 – 07.15</div>
+        <div class="ag-dot"></div>
+        <div class="ag-label">Menyanyikan Indonesia Raya &amp; Mars BPR-BPRS</div>
+      </div>
+
+      <div class="ag-row">
+        <div class="ag-time">07.15 – 07.20</div>
+        <div class="ag-dot"></div>
+        <div class="ag-label">Pengantar Acara oleh Ketua DPD Perbarindo DKI Jaya</div>
+      </div>
+
+      <div class="ag-row star">
+        <div class="ag-time">07.20 – 07.30</div>
+        <div class="ag-dot"></div>
+        <div>
+          <div class="ag-label">Prosesi Pelepasan Peserta Fun Walk oleh VIP</div>
+          <span class="ag-tag">Momen Utama</span>
+        </div>
+      </div>
+
+      <div class="ag-row">
+        <div class="ag-time">07.30 – 07.45</div>
+        <div class="ag-dot"></div>
+        <div class="ag-label">Morning Break VIP</div>
+      </div>
+
+      <div class="ag-row">
+        <div class="ag-time">07.45 – 09.00</div>
+        <div class="ag-dot"></div>
+        <div class="ag-label">Kunjungan Stand Pameran oleh VIP</div>
+      </div>
+
+      <div class="ag-row">
+        <div class="ag-time">09.00 – 09.30</div>
+        <div class="ag-dot"></div>
+        <div class="ag-label">Literasi &amp; Edukasi kepada Masyarakat oleh VIP</div>
+      </div>
+
+      <div class="ag-row star">
+        <div class="ag-time">09.30 – 11.00</div>
+        <div class="ag-dot"></div>
+        <div>
+          <div class="ag-label">Hiburan Konser Musik &amp; Pengundian Hadiah</div>
+          <span class="ag-tag">Penutup</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════
+     FOOTER
+══════════════════════════════ -->
+<footer>
+  <strong>DPD Perbarindo DKI Jaya &amp; Sekitarnya</strong>
+  <p style="margin-top:5px;">Hari BPR-BPRS Nasional 2026 &nbsp;·&nbsp; Bogor, 7 Juni 2026</p>
+  <p style="margin-top:4px; font-size:.68rem; letter-spacing:.1em; text-transform:uppercase;">Mudah · Aman · Bersahabat</p>
+</footer>
+
+</body>
+</html>
