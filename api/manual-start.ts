@@ -26,10 +26,10 @@ export default async function handler(event: any) {
 
       const { manualStartTime } = body;
 
-      // Validate ISO 8601 datetime format
+      let dateObj: Date | null = null;
       if (manualStartTime !== null && manualStartTime !== undefined) {
-        const date = new Date(manualStartTime);
-        if (isNaN(date.getTime())) {
+        dateObj = new Date(manualStartTime);
+        if (isNaN(dateObj.getTime())) {
           return errorResponse('Invalid datetime format. Use ISO 8601 format (e.g., 2025-06-15T06:00:00.000Z)', 400);
         }
       }
@@ -39,7 +39,7 @@ export default async function handler(event: any) {
 
       await query(
         'UPDATE Event SET manualStartTime = ?, updatedAt = NOW() WHERE id = ?',
-        [manualStartTime ?? null, eventId]
+        [dateObj, eventId]
       );
 
       const updated: any = await query(
