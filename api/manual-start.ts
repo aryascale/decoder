@@ -10,61 +10,63 @@ export default async function handler(event: any) {
     if (!eventId) return errorResponse('eventId is required', 400);
 
     if (event.httpMethod === 'GET') {
-      const events: any = await query(
-        'SELECT id, manualStartTime FROM Event WHERE id = ? LIMIT 1',
+      const manualStarts: any = await query(
+        'SELECT id, eventId, bib, epc, timeStr, createdAt FROM ManualStart WHERE eventId = ? ORDER BY createdAt DESC',
         [eventId]
       );
-      if (events.length === 0) return errorResponse('Event not found', 404);
-
-      const record = events[0];
-      return successResponse({ manualStartTime: record.manualStartTime });
+      return successResponse(manualStarts);
     }
 
     if (event.httpMethod === 'POST' || event.httpMethod === 'PUT') {
       const body = parseBody(event);
       if (!body) return errorResponse('Missing request body', 400);
 
-      const { manualStartTime } = body;
+      const { bib, epc, timeStr } = body;
 
-      // Validate ISO 8601 datetime format
-      if (manualStartTime !== null && manualStartTime !== undefined) {
-        const date = new Date(manualStartTime);
-        if (isNaN(date.getTime())) {
-          return errorResponse('Invalid datetime format. Use ISO 8601 format (e.g., 2025-06-15T06:00:00.000Z)', 400);
-        }
+      if (!bib || !epc || !timeStr) {
+        return errorResponse('bib, epc, and timeStr are required', 400);
       }
 
-      const existing: any = await query('SELECT id FROM Event WHERE id = ? LIMIT 1', [eventId]);
-      if (existing.length === 0) return errorResponse('Event not found', 404);
-
-      await query(
-        'UPDATE Event SET manualStartTime = ?, updatedAt = NOW() WHERE id = ?',
-        [manualStartTime ?? null, eventId]
+      // Upsert: insert or update if exists
+      const existing: any = await query(
+        'SELECT id FROM ManualStart WHERE eventId = ? AND bib = ? LIMIT 1',
+        [eventId, bib]
       );
+
+      if (existing.length > 0) {
+        await query(
+          'UPDATE ManualStart SET epc = ?, timeStr = ?, updatedAt = NOW() WHERE eventId = ? AND bib = ?',
+          [epc, timeStr, eventId, bib]
+        );
+      } else {
+        const id = crypto.randomUUID();
+        await query(
+          'INSERT INTO ManualStart (id, eventId, bib, epc, timeStr, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, NOW(), NOW())',
+          [id, eventId, bib, epc, timeStr]
+        );
+      }
 
       const updated: any = await query(
-        'SELECT id, manualStartTime FROM Event WHERE id = ? LIMIT 1',
-        [eventId]
+        'SELECT id, eventId, bib, epc, timeStr, createdAt FROM ManualStart WHERE eventId = ? AND bib = ? LIMIT 1',
+        [eventId, bib]
       );
 
-      const actionDesc = manualStartTime ? `Manual Start Time di-set: ${manualStartTime}` : `Manual Start Time dihapus (Clear)`;
-      await logActivity('event.update', actionDesc, 'admin', eventId);
+      await logActivity('event.update', `Manual Start for BIB ${bib} set to ${timeStr}`, 'admin', eventId);
 
-      return successResponse({ manualStartTime: updated[0].manualStartTime });
+      return successResponse(updated[0]);
     }
 
     if (event.httpMethod === 'DELETE') {
-      const existing: any = await query('SELECT id FROM Event WHERE id = ? LIMIT 1', [eventId]);
-      if (existing.length === 0) return errorResponse('Event not found', 404);
+      const id = event.queryStringParameters?.id;
+      if (!id) return errorResponse('id is required', 400);
 
-      await query(
-        'UPDATE Event SET manualStartTime = NULL, updatedAt = NOW() WHERE id = ?',
-        [eventId]
-      );
+      const existing: any = await query('SELECT bib FROM ManualStart WHERE id = ? AND eventId = ? LIMIT 1', [id, eventId]);
+      if (existing.length === 0) return errorResponse('Manual Start not found', 404);
 
-      await logActivity('event.update', 'Manual Start Time dihapus (Clear)', 'admin', eventId);
+      await query('DELETE FROM ManualStart WHERE id = ? AND eventId = ?', [id, eventId]);
+      await logActivity('event.update', `Manual Start for BIB ${existing[0].bib} removed`, 'admin', eventId);
 
-      return successResponse({ manualStartTime: null });
+      return successResponse({ success: true });
     }
 
     return errorResponse('Method not allowed', 405);

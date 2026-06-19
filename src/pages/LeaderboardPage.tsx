@@ -145,6 +145,18 @@ export default function LeaderboardPage() {
           }
         } catch {}
 
+        // Load manual start map from API
+        const manualStartMap = new Map<string, string>();
+        try {
+          const msRes = await fetch(`/api/manual-start?eventId=${eventId}`);
+          if (msRes.ok) {
+            const msData = await msRes.json();
+            if (Array.isArray(msData)) {
+              msData.forEach((ms: any) => manualStartMap.set(ms.epc, ms.timeStr));
+            }
+          }
+        } catch {}
+
         // Calculate Leaderboard Data
         // This function is getting big, ideally we move the calculation logic to a helper
         // But for now, let's keep it here to match previous behavior 
@@ -220,19 +232,31 @@ export default function LeaderboardPage() {
           const finishEntry = finishMap.get(p.epc);
 
           const catKey = normCat(p.sourceCategoryKey);
-          const absMs = absOverrideMs[catKey] ?? null;
-          const timeOnly = timeOnlyStr[catKey] ?? null;
+          let absMs = absOverrideMs[catKey] ?? null;
+          let timeOnly = timeOnlyStr[catKey] ?? null;
 
           let total: number | null = null;
+          
+          let startMs = startMap.get(p.epc)?.ms;
+          
+          // Individual per-BIB Manual Start Priority overrides Global AND Category Start
+          const bibManualStartStr = manualStartMap.get(p.epc);
+          if (bibManualStartStr && finishEntry?.ms) {
+            const builtOverride = buildOverrideFromFinishDate(finishEntry.ms, bibManualStartStr);
+            if (builtOverride != null) {
+              startMs = builtOverride;
+              absMs = null;
+              timeOnly = null;
+            }
+          }
 
           if (absMs != null && Number.isFinite(absMs)) {
             const delta = finishEntry.ms - absMs;
             if (Number.isFinite(delta) && delta >= 0) {
               total = delta;
             } else {
-              const startEntry = startMap.get(p.epc);
-              if (!startEntry?.ms) return;
-              total = finishEntry.ms - startEntry.ms;
+              if (!startMs) return;
+              total = finishEntry.ms - startMs;
             }
           } else if (timeOnly) {
             const builtOverride = buildOverrideFromFinishDate(
@@ -244,19 +268,16 @@ export default function LeaderboardPage() {
               if (Number.isFinite(delta) && delta >= 0) {
                 total = delta;
               } else {
-                const startEntry = startMap.get(p.epc);
-                if (!startEntry?.ms) return;
-                total = finishEntry.ms - startEntry.ms;
+                if (!startMs) return;
+                total = finishEntry.ms - startMs;
               }
             } else {
-              const startEntry = startMap.get(p.epc);
-              if (!startEntry?.ms) return;
-              total = finishEntry.ms - startEntry.ms;
+              if (!startMs) return;
+              total = finishEntry.ms - startMs;
             }
           } else {
-            const startEntry = startMap.get(p.epc);
-            if (startEntry?.ms && finishEntry?.ms) {
-              total = finishEntry.ms - startEntry.ms;
+            if (startMs && finishEntry?.ms) {
+              total = finishEntry.ms - startMs;
             }
           }
 
@@ -271,9 +292,9 @@ export default function LeaderboardPage() {
           }
 
           // Compute total time for live runners if finish.csv doesn't exist
-          if ((!total || total < 0) && epsRecords && epsRecords.length > 0 && startMap.get(p.epc)?.ms) {
+          if ((!total || total < 0) && epsRecords && epsRecords.length > 0 && startMs) {
             const latest = epsRecords[epsRecords.length - 1];
-            total = new Date(latest.time).getTime() - startMap.get(p.epc)!.ms;
+            total = new Date(latest.time).getTime() - startMs;
           }
 
           if (!Number.isFinite(total) || total == null || total < 0) return;

@@ -773,6 +773,18 @@ export default function EventPage() {
           }
         } catch {}
 
+        // Load manual start map from API
+        const manualStartMap = new Map<string, string>();
+        try {
+          const msRes = await fetch(`/api/manual-start?eventId=${event.id}`);
+          if (msRes.ok) {
+            const msData = await msRes.json();
+            if (Array.isArray(msData)) {
+              msData.forEach((ms: any) => manualStartMap.set(ms.epc, ms.timeStr));
+            }
+          }
+        } catch {}
+
         const normCat = (s: string) => String(s || "").trim().toLowerCase().replace(/-/g, " ").replace(/\s+/g, " ");
 
         const absOverrideMs: Record<string, number | null> = {};
@@ -878,13 +890,24 @@ export default function EventPage() {
             }
 
             const catKey = normCat(resolvedCategoryKey);
-            const absMs = absOverrideMs[catKey] ?? null;
-            const timeOnly = timeOnlyStr[catKey] ?? null;
+            let absMs = absOverrideMs[catKey] ?? null;
+            let timeOnly = timeOnlyStr[catKey] ?? null;
 
             // Global T0 priority: manualStartMs > startEntry.ms
             const manualStartMs = event.manualStartTime ? new Date(event.manualStartTime).getTime() : null;
             const startEntry = startMap.get(p.epc);
-            const fallbackStartMs = manualStartMs || startEntry?.ms;
+            let fallbackStartMs = manualStartMs || startEntry?.ms;
+
+            // Individual per-BIB Manual Start Priority overrides Global AND Category Start
+            const bibManualStartStr = manualStartMap.get(p.epc);
+            if (bibManualStartStr) {
+              const builtOverride = buildOverrideFromFinishDate(finishEntry.ms, bibManualStartStr);
+              if (builtOverride != null) {
+                fallbackStartMs = builtOverride;
+                absMs = null;
+                timeOnly = null;
+              }
+            }
 
             let total: number | null = null;
 
