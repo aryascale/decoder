@@ -2054,7 +2054,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
                 </button>
               </div>
               <div className="subtle text-sm mt-2 text-blue-600 font-medium">
-                Gunakan ini secara *real-time* saat bendera diangkat. Menyimpan di sini akan langsung berlaku.
+                Menyimpan di sini akan mengatur Global Start Time.
               </div>
             </div>
           </div>
