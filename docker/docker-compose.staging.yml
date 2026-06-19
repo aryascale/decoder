@@ -1,0 +1,47 @@
+services:
+  mysql-staging:
+    image: mysql:8.4
+    container_name: lumpat-mysql-staging
+    restart: always
+    env_file:
+      - ../.env.staging
+    ports:
+      - "127.0.0.1:3307:3306"
+    volumes:
+      - mysql_data_staging:/var/lib/mysql
+
+  phpmyadmin-staging:
+    image: phpmyadmin/phpmyadmin
+    platform: linux/amd64
+    container_name: lumpat-phpmyadmin-staging
+    restart: always
+    environment:
+      PMA_HOST: mysql-staging
+    env_file:
+      - ../.env.staging
+    ports:
+      - "127.0.0.1:8091:80"
+    depends_on:
+      - mysql-staging
+
+  app-staging:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: lumpat-app-staging
+    restart: always
+    ports:
+      - "127.0.0.1:4070:3069"
+    environment:
+      - DATABASE_URL=mysql://root:lumpat2026_staging@mysql-staging:3306/lumpat_db_staging
+      - PORT=3069
+      - NODE_ENV=staging
+    env_file:
+      - ../.env.staging
+    depends_on:
+      - mysql-staging
+    volumes:
+      - ../uploads:/app/uploads
+
+volumes:
+  mysql_data_staging:
