@@ -2012,9 +2012,9 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
 
       {activeTab === 'manual_start' && (
         <div className="tab-pane active fade-in mt-6">
-          <div className="card border-blue-500 border-2 bg-blue-50/10">
+          <div className="card">
             <div className="mb-4">
-              <h2 className="section-title text-blue-600">Global Manual Start</h2>
+              <h2 className="section-title">Global Manual Start</h2>
               <div className="subtle text-sm">
                 Set waktu start untuk seluruh peserta sekaligus. Ini akan digunakan sebagai waktu awal (T0) jika tidak ada waktu spesifik untuk BIB atau Kategori.
               </div>
