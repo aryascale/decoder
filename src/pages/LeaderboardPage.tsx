@@ -148,7 +148,7 @@ export default function LeaderboardPage() {
         // Load manual start map from API
         const manualStartMap = new Map<string, string>();
         try {
-          const msRes = await fetch(`/api/manual-start?eventId=${eventId}`);
+          const msRes = await fetch(`/api/manual-start-bib?eventId=${eventId}`);
           if (msRes.ok) {
             const msData = await msRes.json();
             if (Array.isArray(msData)) {

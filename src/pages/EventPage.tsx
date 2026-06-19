@@ -776,7 +776,7 @@ export default function EventPage() {
         // Load manual start map from API
         const manualStartMap = new Map<string, string>();
         try {
-          const msRes = await fetch(`/api/manual-start?eventId=${event.id}`);
+          const msRes = await fetch(`/api/manual-start-bib?eventId=${event.id}`);
           if (msRes.ok) {
             const msData = await msRes.json();
             if (Array.isArray(msData)) {
