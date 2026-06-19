@@ -963,15 +963,23 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
     if (!confirm(timeStr ? "Simpan Manual Start ini?" : "Hapus Manual Start?")) return;
     setSavingManualStart(true);
     try {
+      let finalStr = timeStr;
+      if (timeStr && timeStr.length <= 8 && !timeStr.includes('-')) {
+        let t = timeStr;
+        if (t.split(':').length === 2) t += ":00";
+        const today = formatNowAsTimestamp().split(' ')[0];
+        finalStr = `${today} ${t}.000`;
+      }
+
       const manualRes = await fetch(`/api/manual-start?eventId=${eventId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ manualStartTime: timeStr || null }),
+        body: JSON.stringify({ manualStartTime: finalStr || null }),
       });
       if (!manualRes.ok) throw new Error("Gagal menyimpan waktu start.");
-      setManualStartTime(timeStr);
+      setManualStartTime(finalStr);
       bumpDataVersion();
-      alert(timeStr ? "Manual Start berhasil di-set!" : "Manual Start berhasil dihapus!");
+      alert(finalStr ? "Manual Start berhasil di-set!" : "Manual Start berhasil dihapus!");
     } catch (e: any) {
       alert(e.message);
     } finally {
@@ -2020,23 +2028,24 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
               </div>
             </div>
             <div className="admin-cutoff">
-              <div className="label font-medium text-sm mb-1">Manual Start Time (ISO Format)</div>
+              <div className="label font-medium text-sm mb-1">Manual Start</div>
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
-                  className="search w-full"
-                  placeholder="e.g. 2025-06-15T06:00:00.000Z"
-                  value={manualStartTime}
+                  type="time"
+                  step="1"
+                  className="search flex-1 text-center font-bold text-xl py-3 px-4"
+                  value={manualStartTime ? extractTimeOfDay(manualStartTime).split('.')[0] : ""}
                   onChange={(e) => setManualStartTime(e.target.value)}
                 />
                 <button
-                  className="btn primary whitespace-nowrap"
+                  className="btn primary whitespace-nowrap px-6 text-lg font-bold"
                   disabled={savingManualStart}
                   onClick={() => saveManualStartDirectly(manualStartTime)}
                 >
                   {savingManualStart ? "Saving..." : "Save Time"}
                 </button>
                 <button
-                  className="btn ghost whitespace-nowrap border border-blue-500 text-blue-600"
+                  className="btn ghost whitespace-nowrap border border-blue-500 text-blue-600 text-lg font-bold"
                   disabled={savingManualStart}
                   onClick={() => {
                     const nowStr = formatNowAsTimestamp();
