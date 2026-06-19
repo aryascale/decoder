@@ -22,6 +22,7 @@ model Event {
   isActive           Boolean             @default(true)
   cutoffMs           Int?
   categoryStartTimes Json?
+  manualStartTime    DateTime?
   logoUrl            String?
   bannerUrl          String?
   homeImageUrl        String?
