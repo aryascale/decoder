@@ -2039,7 +2039,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
                   className="btn ghost whitespace-nowrap border border-blue-500 text-blue-600"
                   disabled={savingManualStart}
                   onClick={() => {
-                    const nowStr = new Date().toISOString();
+                    const nowStr = formatNowAsTimestamp();
                     setManualStartTime(nowStr);
                     saveManualStartDirectly(nowStr);
                   }}
@@ -2064,6 +2064,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
             allRows={allRows}
             onDataVersionBump={bumpDataVersion}
             eventId={eventId}
+            globalManualStartTime={manualStartTime}
           />
         </div>
       )}

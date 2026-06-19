@@ -7,6 +7,7 @@ interface ManualStartBibPageProps {
   allRows: LeaderRow[];
   onDataVersionBump: () => void;
   eventId: string;
+  globalManualStartTime?: string;
 }
 
 interface ManualStartRecord {
@@ -26,7 +27,7 @@ interface MasterRow {
   finishTimeRaw: string;
 }
 
-export default function ManualStartBibPage({ allRows, onDataVersionBump, eventId }: ManualStartBibPageProps) {
+export default function ManualStartBibPage({ allRows, onDataVersionBump, eventId, globalManualStartTime }: ManualStartBibPageProps) {
   const [q, setQ] = useState("");
   const [manualStarts, setManualStarts] = useState<ManualStartRecord[]>([]);
   const [loading, setLoading] = useState(true);
@@ -237,7 +238,7 @@ export default function ManualStartBibPage({ allRows, onDataVersionBump, eventId
                             </span>
                           ) : (
                             <span className="inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase bg-gray-100 text-gray-500">
-                              (Global/Cat)
+                              {globalManualStartTime ? `Global: ${extractTimeOfDay(globalManualStartTime)}` : "(Global/Cat)"}
                             </span>
                           )}
                         </td>
@@ -330,7 +331,7 @@ export default function ManualStartBibPage({ allRows, onDataVersionBump, eventId
                           : 'bg-gray-100 text-gray-500'
                       }`}
                     >
-                      {msRecord ? msRecord.timeStr : "(Global)"}
+                      {msRecord ? msRecord.timeStr : (globalManualStartTime ? `Global: ${extractTimeOfDay(globalManualStartTime)}` : "(Global)")}
                     </span>
                   </div>
 
