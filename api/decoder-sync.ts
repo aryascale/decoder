@@ -13,20 +13,43 @@ export default async function handler(event: any) {
     const body = parseBody(event);
     if (!body) return errorResponse('Missing request body', 400);
 
-    const { eventId, logs } = body;
+    let { eventId, logs } = body;
 
-    if (!eventId) return errorResponse('eventId is required', 400);
     if (!Array.isArray(logs) || logs.length === 0) {
       return errorResponse('logs array is required and must not be empty', 400);
     }
 
-    // Verify event exists
-    const existingEvent = await prisma.event.findUnique({
-      where: { id: eventId }
-    });
+    // Auto-detect eventId if not provided by hardware
+    if (!eventId) {
+      const today = new Date();
+      const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+      const endOfDay = new Date(today.setHours(23, 59, 59, 999));
 
-    if (!existingEvent) {
-      return errorResponse('Event not found', 404);
+      // Find an event happening today, or an active one
+      const activeEvent = await prisma.event.findFirst({
+        where: {
+          OR: [
+            { eventDate: { gte: startOfDay, lte: endOfDay } },
+            { status: 'ongoing' }
+          ],
+          isDeleted: false
+        },
+        orderBy: { eventDate: 'desc' }
+      });
+
+      if (!activeEvent) {
+        return errorResponse('No active event found for today. Please specify eventId manually.', 404);
+      }
+      eventId = activeEvent.id;
+    } else {
+      // Verify the provided event exists
+      const existingEvent = await prisma.event.findUnique({
+        where: { id: eventId }
+      });
+
+      if (!existingEvent) {
+        return errorResponse('Event not found', 404);
+      }
     }
 
     // Bulk insert logs
@@ -35,13 +58,13 @@ export default async function handler(event: any) {
       epc: log.epc,
       timestamp: new Date(log.timestamp),
       readerId: log.readerId || null,
-      antenna: log.antenna || null,
+      antenna: String(log.antenna || ''),
     }));
 
-    // We can't do createMany with SQLite/some older MySQL easily sometimes if it exceeds limits, but for Prisma it handles chunking if needed.
+    // Insert to DecoderLog table
     const createdLogs = await prisma.decoderLog.createMany({
       data: mappedLogs,
-      skipDuplicates: true // In case the decoder re-sends logs
+      skipDuplicates: true 
     });
 
     // Also write to Penalty or Checkpoint if it requires? 
