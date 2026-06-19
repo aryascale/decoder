@@ -2051,11 +2051,6 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
                   }}
                 >
                   Clear
-                </button>
-              </div>
-              <div className="subtle text-sm mt-2 text-blue-600 font-medium">
-                Menyimpan di sini akan mengatur Global Start Time.
-              </div>
             </div>
           </div>
         </div>
