@@ -2061,7 +2061,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
           </div>
 
           <ManualStartBibPage
-            allRows={mergedRows}
+            allRows={allRows}
             onDataVersionBump={bumpDataVersion}
             eventId={eventId}
           />
