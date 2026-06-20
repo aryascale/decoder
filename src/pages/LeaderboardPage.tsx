@@ -241,8 +241,8 @@ export default function LeaderboardPage() {
           let timeOnly = timeOnlyStr[catKey] ?? null;
 
           let total: number | null = null;
-          
-          let startMs = startMap.get(p.epc)?.ms;
+          const manualStartMs = eventData?.manualStartTime ? new Date(eventData.manualStartTime).getTime() : null;
+          let startMs = manualStartMs || startMap.get(p.epc)?.ms;
           
           // Individual per-BIB Manual Start Priority overrides Global AND Category Start
           const bibManualStartStr = manualStartMap.get(p.epc);

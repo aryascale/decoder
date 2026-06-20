@@ -225,7 +225,17 @@ export default function LeaderboardTable({
             {r.ageCategory && <div className="bg-stone-100 border-2 border-stone-200 border-b-[3px] px-2 py-1 rounded-lg">{r.ageCategory}</div>}
           </div>
           <div className="text-right">
-            <div className="text-[10px] uppercase font-black text-stone-400 tracking-widest mb-1">Total Time</div>
+            <div className="flex gap-4 items-end justify-end mb-2">
+              <div className="text-right">
+                <div className="text-[9px] uppercase font-black text-stone-400 tracking-widest mb-0.5">Start</div>
+                <div className="font-mono text-xs font-bold text-stone-500">{r.startTimeRaw || "-"}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-[9px] uppercase font-black text-stone-400 tracking-widest mb-0.5">Finish</div>
+                <div className="font-mono text-xs font-bold text-stone-500">{r.finishTimeRaw || "-"}</div>
+              </div>
+            </div>
+            <div className="text-[10px] uppercase font-black text-stone-400 tracking-widest mb-1">Race Time</div>
             <div className={`font-mono text-xl font-black tracking-tighter bg-stone-100 border-2 border-stone-200 border-b-4 px-3 py-1 rounded-xl inline-block ${isSpecial ? "text-orange-600" : "text-stone-900"}`}>
               {r.totalTimeDisplay}
             </div>
