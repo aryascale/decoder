@@ -79,9 +79,10 @@ export default function LeaderboardTable({
     return rows.reduce((max, r) => Math.max(max, r.laps?.length || 0), 0);
   }, [rows]);
 
-  const gridTemplateColumns = useMemo(() => {
+  const gridTemplateColumnsInner = useMemo(() => {
     const lapCols = Array(maxLapsCount).fill('120px').join(' ');
-    return `80px 120px minmax(200px,1fr) 120px 140px 140px 120px 140px 140px ${lapCols ? lapCols + ' ' : ''}140px`;
+    // Use fixed widths instead of auto to ensure the Header grid and Row grids align perfectly.
+    return `40px 60px minmax(200px, 1fr) 90px 90px 90px 180px ${lapCols ? lapCols + ' ' : ''}`;
   }, [maxLapsCount]);
 
   const rankedRows = useMemo(() => {
@@ -544,20 +545,21 @@ export default function LeaderboardTable({
           {/* Desktop Table View (Duolingo Style) */}
           <div className="hidden md:flex flex-col gap-3 overflow-x-auto pb-4">
             {/* Header */}
-            <div className="grid gap-4 px-6 py-2 text-[11px] font-black tracking-widest text-stone-400 uppercase min-w-max" style={{ gridTemplateColumns }}>
-              <div className="text-center">Pos</div>
-              <div>BIB</div>
-              <div>Athlete Name</div>
-              <div>Gender</div>
-              <div>Category</div>
-              <div>Age Category</div>
-              <div>Latest CP</div>
-              <div>Start Time</div>
-              <div>Finish Time</div>
-              {Array.from({ length: maxLapsCount }).map((_, i) => (
-                <div key={i}>Lap {i + 1}</div>
-              ))}
-              <div className="text-right">Race Time</div>
+            <div className="flex gap-4 px-2 py-2 text-[11px] font-black tracking-widest text-stone-400 uppercase min-w-0">
+              <div className="flex-1 grid gap-3 lg:gap-4 px-4 lg:px-6 items-center" style={{ gridTemplateColumns: gridTemplateColumnsInner }}>
+                <div className="text-center">Pos</div>
+                <div>BIB</div>
+                <div>Athlete Name</div>
+                <div>Gender</div>
+                <div>Category</div>
+                <div>Age</div>
+                <div>Latest CP</div>
+                {Array.from({ length: maxLapsCount }).map((_, i) => {
+                  const label = rows.find(r => r.laps && r.laps.length > i)?.laps?.[i]?.label || `Lap ${i + 1}`;
+                  return <div key={i} className="text-center uppercase" title={label}>{label}</div>;
+                })}
+              </div>
+              <div className="w-[120px] flex-shrink-0 text-right pr-6">Race Time</div>
             </div>
 
             {/* Rows */}
@@ -567,44 +569,50 @@ export default function LeaderboardTable({
               const isSpecial = r.totalTimeDisplay === "DNF" || r.totalTimeDisplay === "DSQ";
 
               return (
-                <div key={r.epc} onClick={() => onSelect?.(r)} className={`grid gap-4 items-center px-6 py-4 bg-white rounded-2xl border-2 border-stone-200 border-b-[6px] cursor-pointer hover:-translate-y-1 hover:border-stone-300 transition-all ${isTop10 && showTop10Badge ? 'border-yellow-200 bg-yellow-50/50' : ''} ${isSpecial ? 'border-red-200 bg-red-50/50' : ''}`} style={{ gridTemplateColumns }}>
-                  <div className="text-center">
-                    <span className={`inline-flex items-center justify-center w-12 h-12 rounded-xl text-lg ${getPosStyle(r.rank)}`}>
-                      {pos}
-                    </span>
+                <div key={r.epc} className="flex gap-4 items-center px-2 min-w-0">
+                  <div 
+                    onClick={() => onSelect?.(r)} 
+                    className={`flex-1 grid gap-3 lg:gap-4 items-center px-4 lg:px-6 py-3 lg:py-4 bg-white rounded-2xl border-2 border-stone-200 border-b-[6px] cursor-pointer hover:-translate-y-1 hover:border-stone-300 transition-all min-w-0 ${isTop10 && showTop10Badge ? 'border-yellow-200 bg-yellow-50/50' : ''} ${isSpecial ? 'border-red-200 bg-red-50/50' : ''}`} 
+                    style={{ gridTemplateColumns: gridTemplateColumnsInner }}
+                  >
+                    <div className="text-center">
+                      <span className={`inline-flex items-center justify-center w-10 h-10 rounded-xl text-base ${getPosStyle(r.rank)}`}>
+                        {pos}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-mono font-bold text-red-600 bg-red-50 border-2 border-red-100 border-b-[4px] px-2 py-1 rounded-xl inline-block text-xs lg:text-sm">
+                        {r.bib || "-"}
+                      </span>
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-extrabold text-stone-900 tracking-tight text-base lg:text-lg truncate">{r.name || "-"}</div>
+                    </div>
+                    <div>
+                      <span className="text-[10px] lg:text-xs font-bold text-stone-500 bg-stone-100 border-2 border-stone-200 border-b-[3px] px-2 py-1 rounded-xl inline-block whitespace-nowrap">{r.gender || "-"}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] lg:text-xs font-bold text-stone-500 bg-stone-100 border-2 border-stone-200 border-b-[3px] px-2 py-1 rounded-xl inline-block whitespace-nowrap">{r.category || "-"}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] lg:text-xs font-bold text-stone-500 bg-stone-100 border-2 border-stone-200 border-b-[3px] px-2 py-1 rounded-xl inline-block whitespace-nowrap">{r.ageCategory || "-"}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] lg:text-xs font-bold text-blue-600 bg-blue-50 border-2 border-blue-100 border-b-[3px] px-2 py-1 rounded-xl inline-block whitespace-nowrap">{r.latestCp || "-"}</span>
+                    </div>
+                    {Array.from({ length: maxLapsCount }).map((_, i) => {
+                      const lap = r.laps?.[i];
+                      return (
+                        <div key={i} className="text-[10px] lg:text-xs font-mono font-bold text-stone-600 whitespace-nowrap text-center">
+                          {lap ? lap.timeDisplay : "-"}
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div>
-                    <span className="font-mono font-bold text-red-600 bg-red-50 border-2 border-red-100 border-b-[4px] px-3 py-1.5 rounded-xl inline-block">
-                      {r.bib || "-"}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="font-extrabold text-stone-900 tracking-tight text-xl">{r.name || "-"}</div>
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-stone-500 bg-stone-100 border-2 border-stone-200 border-b-[3px] px-3 py-1.5 rounded-xl inline-block">{r.gender || "-"}</span>
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-stone-500 bg-stone-100 border-2 border-stone-200 border-b-[3px] px-3 py-1.5 rounded-xl inline-block">{r.category || "-"}</span>
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-stone-500 bg-stone-100 border-2 border-stone-200 border-b-[3px] px-3 py-1.5 rounded-xl inline-block">{r.ageCategory || "-"}</span>
-                  </div>
-                  <div>
-                    <span className="text-sm font-bold text-blue-600 bg-blue-50 border-2 border-blue-100 border-b-[3px] px-3 py-1.5 rounded-xl inline-block">{r.latestCp || "-"}</span>
-                  </div>
-                  <div className="text-sm font-mono font-bold text-stone-400">{r.startTimeRaw || "-"}</div>
-                  <div className="text-sm font-mono font-bold text-stone-400">{r.finishTimeRaw || "-"}</div>
-                  {Array.from({ length: maxLapsCount }).map((_, i) => {
-                    const lap = r.laps?.[i];
-                    return (
-                      <div key={i} className="text-sm font-mono font-bold text-stone-600">
-                        {lap ? lap.timeDisplay : "-"}
-                      </div>
-                    );
-                  })}
-                  <div className="text-right">
-                    <span className={`font-mono font-black text-xl tracking-tighter bg-stone-100 border-2 border-stone-200 border-b-[4px] px-4 py-2 rounded-xl inline-block ${isSpecial ? "text-orange-600" : "text-stone-900"}`}>
+                  
+                  {/* Outer Label (Race Time / ACTIVE) */}
+                  <div className="w-[100px] lg:w-[120px] flex-shrink-0 text-right pr-2 lg:pr-6">
+                    <span className={`font-mono font-black text-sm lg:text-lg tracking-tighter bg-stone-100 border-2 border-stone-200 border-b-[4px] px-3 py-1.5 rounded-xl inline-block w-full text-center ${isSpecial ? "text-orange-600" : r.totalTimeDisplay === "ACTIVE" ? "text-emerald-600 border-emerald-200 bg-emerald-50" : "text-stone-900"}`}>
                       {r.totalTimeDisplay}
                     </span>
                   </div>
@@ -613,7 +621,7 @@ export default function LeaderboardTable({
             })}
 
             {filtered.length === 0 && (
-              <div className="px-6 py-16 text-center bg-stone-50 border-2 border-stone-200 border-b-[6px] rounded-2xl">
+              <div className="px-6 py-16 text-center bg-stone-50 border-2 border-stone-200 border-b-[6px] rounded-2xl mx-2">
                 <div className="font-black text-2xl text-stone-300 mb-2 tracking-tighter uppercase">No Tracking Data</div>
                 <div className="text-sm font-medium text-stone-500">
                   {rows.length === 0

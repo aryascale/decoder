@@ -31,41 +31,50 @@ export default async function handler(req: any) {
       ms
     );
 
-    // Find active event this EPC belongs to
-    const runnerStatuses: any[] = await query(
-      `SELECT rs.*, e.id as event_id, e.isActive as event_isActive, e.eventDate as event_eventDate 
-       FROM RunnerStatus rs
-       JOIN Event e ON rs.eventId = e.id
-       WHERE rs.epc = ?`,
-      [e]
-    );
+    let activeEventId = req.queryStringParameters?.eventId || null;
 
-    if (runnerStatuses.length === 0) {
-      return { statusCode: 404, body: JSON.stringify({ error: 'EPC not registered in any event' }), headers: {} };
+    if (!activeEventId) {
+      // Find active event that owns this checkpoint identity (most recent first)
+      const activeEvents: any[] = await query(
+        `SELECT e.id FROM Event e 
+         JOIN Checkpoint c ON c.eventId = e.id 
+         WHERE e.isActive = 1 AND c.identitas = ? 
+         ORDER BY e.eventDate DESC, e.id DESC LIMIT 1`,
+        [i]
+      );
+
+      if (activeEvents.length > 0) {
+        activeEventId = activeEvents[0].id;
+      } else {
+        // Fallback to any active event
+        const fallbackEvents: any[] = await query(
+          `SELECT * FROM Event WHERE isActive = 1 ORDER BY eventDate DESC LIMIT 1`,
+          []
+        );
+        activeEventId = fallbackEvents.length > 0 ? fallbackEvents[0].id : null;
+      }
     }
 
-    // Try to find the event that is currently active or happening today
-    let activeStatus = runnerStatuses.find(s => s.event_isActive);
-    
-    if (!activeStatus) {
+    if (!activeEventId) {
       const today = new Date();
-      activeStatus = runnerStatuses.find(s => {
-        const d = new Date(s.event_eventDate);
-        return d.getFullYear() === today.getFullYear() &&
-               d.getMonth() === today.getMonth() &&
-               d.getDate() === today.getDate();
-      });
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const todayEvents: any[] = await query(
+        `SELECT * FROM Event WHERE DATE(eventDate) = ? ORDER BY eventDate DESC LIMIT 1`,
+        [todayStr]
+      );
+      if (todayEvents.length > 0) {
+        activeEventId = todayEvents[0].id;
+      }
     }
 
-    if (!activeStatus) {
-      return { statusCode: 404, body: JSON.stringify({ error: 'No active event found for this EPC' }), headers: {} };
+    if (!activeEventId) {
+      return { statusCode: 404, body: JSON.stringify({ error: 'No active event found today' }), headers: {} };
     }
-
-    const activeEventId = activeStatus.event_id;
 
     // Find checkpoint
     const checkpoints: any[] = await query(
       `SELECT * FROM Checkpoint WHERE eventId = ? AND identitas = ? LIMIT 1`,
+
       [activeEventId, i]
     );
 

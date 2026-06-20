@@ -76,7 +76,7 @@ export type MasterParticipant = {
   ageCategory?: string;
 };
 
-async function requireCsvText(kind: "master" | "finish", eventId: string = 'default'): Promise<string> {
+async function requireCsvText(kind: "master" | "start" | "finish" | "checkpoint", eventId: string = 'default'): Promise<string> {
   // Get CSV for this specific event only - NO fallback to default
   const file = await getCsvFile(kind, eventId);
 
@@ -88,7 +88,7 @@ async function requireCsvText(kind: "master" | "finish", eventId: string = 'defa
   return file.text;
 }
 
-async function getCsvTextOptional(kind: "start" | "checkpoint", eventId: string = 'default'): Promise<string | null> {
+async function getCsvTextOptional(kind: "master" | "start" | "finish" | "checkpoint", eventId: string = 'default'): Promise<string | null> {
   // Get CSV for this specific event only - NO fallback to default
   const file = await getCsvFile(kind, eventId);
   return file?.text || null;
@@ -179,11 +179,8 @@ export async function loadMasterParticipants(
 
 export type TimeEntry = { ms: number | null; raw: string };
 
-export async function loadTimesMap(kind: "start" | "finish",eventId: string = 'default'): Promise<Map<string, TimeEntry>> {
-  const text =
-    kind === "finish"
-      ? await requireCsvText("finish", eventId)
-      : await getCsvTextOptional("start", eventId);
+export async function loadTimesMap(kind: "start" | "finish", eventId: string = 'default'): Promise<Map<string, TimeEntry>> {
+  const text = await getCsvTextOptional(kind, eventId);
   if (!text) {
     return new Map();
   }

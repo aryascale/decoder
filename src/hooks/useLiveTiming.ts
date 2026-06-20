@@ -29,6 +29,7 @@ export function useLiveTiming(eventId: string) {
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
   const [registrations, setRegistrations] = useState<Record<string, Registration>>({});
   const [recordsByEpc, setRecordsByEpc] = useState<Record<string, RecordData[]>>({});
+  const [loading, setLoading] = useState(true);
   const socketRef = useRef<Socket | null>(null);
   const lastEventIdRef = useRef<string>("");
 
@@ -68,6 +69,8 @@ export function useLiveTiming(eventId: string) {
       }
     } catch (err) {
       console.error("[useLiveTiming] Failed to load live timing", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -124,9 +127,9 @@ export function useLiveTiming(eventId: string) {
 
     return () => {
       clearInterval(interval);
-      newSocket.disconnect();
+      if (socketRef.current) socketRef.current.disconnect();
     };
   }, [eventId]);
 
-  return { checkpoints, registrations, recordsByEpc };
+  return { checkpoints, registrations, recordsByEpc, loading };
 }
