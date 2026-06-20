@@ -40,6 +40,7 @@ function formatEvent(event: any) {
     createdAt: event.createdAt instanceof Date ? event.createdAt.getTime() : event.createdAt,
     cutoffMs: event.cutoffMs,
     categoryStartTimes,
+    manualStartTime: event.manualStartTime instanceof Date ? event.manualStartTime.toISOString() : event.manualStartTime || null,
   };
 }
 
