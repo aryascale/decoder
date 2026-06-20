@@ -79,9 +79,9 @@ export default function LeaderboardTable({
     return rows.reduce((max, r) => Math.max(max, r.laps?.length || 0), 0);
   }, [rows]);
 
-  const gridColsClass = useMemo(() => {
-    const lapCols = Array(maxLapsCount).fill('120px').join('_');
-    return `grid-cols-[80px_120px_minmax(200px,1fr)_120px_140px_140px_120px_140px_140px${lapCols ? '_' + lapCols : ''}_140px]`;
+  const gridTemplateColumns = useMemo(() => {
+    const lapCols = Array(maxLapsCount).fill('120px').join(' ');
+    return `80px 120px minmax(200px,1fr) 120px 140px 140px 120px 140px 140px ${lapCols ? lapCols + ' ' : ''}140px`;
   }, [maxLapsCount]);
 
   const rankedRows = useMemo(() => {
@@ -544,7 +544,7 @@ export default function LeaderboardTable({
           {/* Desktop Table View (Duolingo Style) */}
           <div className="hidden md:flex flex-col gap-3 overflow-x-auto pb-4">
             {/* Header */}
-            <div className={`grid ${gridColsClass} gap-4 px-6 py-2 text-[11px] font-black tracking-widest text-stone-400 uppercase min-w-max`}>
+            <div className="grid gap-4 px-6 py-2 text-[11px] font-black tracking-widest text-stone-400 uppercase min-w-max" style={{ gridTemplateColumns }}>
               <div className="text-center">Pos</div>
               <div>BIB</div>
               <div>Athlete Name</div>
@@ -567,7 +567,7 @@ export default function LeaderboardTable({
               const isSpecial = r.totalTimeDisplay === "DNF" || r.totalTimeDisplay === "DSQ";
 
               return (
-                <div key={r.epc} onClick={() => onSelect?.(r)} className={`grid ${gridColsClass} gap-4 items-center px-6 py-4 bg-white rounded-2xl border-2 border-stone-200 border-b-[6px] cursor-pointer hover:-translate-y-1 hover:border-stone-300 transition-all ${isTop10 && showTop10Badge ? 'border-yellow-200 bg-yellow-50/50' : ''} ${isSpecial ? 'border-red-200 bg-red-50/50' : ''}`}>
+                <div key={r.epc} onClick={() => onSelect?.(r)} className={`grid gap-4 items-center px-6 py-4 bg-white rounded-2xl border-2 border-stone-200 border-b-[6px] cursor-pointer hover:-translate-y-1 hover:border-stone-300 transition-all ${isTop10 && showTop10Badge ? 'border-yellow-200 bg-yellow-50/50' : ''} ${isSpecial ? 'border-red-200 bg-red-50/50' : ''}`} style={{ gridTemplateColumns }}>
                   <div className="text-center">
                     <span className={`inline-flex items-center justify-center w-12 h-12 rounded-xl text-lg ${getPosStyle(r.rank)}`}>
                       {pos}
