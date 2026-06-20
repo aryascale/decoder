@@ -257,7 +257,7 @@ export default function LeaderboardPage() {
 
           if (absMs != null && Number.isFinite(absMs)) {
             const delta = finishEntry.ms - absMs;
-            if (Number.isFinite(delta) && delta >= 0) {
+            if (Number.isFinite(delta)) {
               total = delta;
             } else {
               if (!startMs) return;
@@ -270,7 +270,7 @@ export default function LeaderboardPage() {
             );
             if (builtOverride != null) {
               const delta = finishEntry.ms - builtOverride;
-              if (Number.isFinite(delta) && delta >= 0) {
+              if (Number.isFinite(delta)) {
                 total = delta;
               } else {
                 if (!startMs) return;
@@ -297,12 +297,12 @@ export default function LeaderboardPage() {
           }
 
           // Compute total time for live runners if finish.csv doesn't exist
-          if ((!total || total < 0) && epsRecords && epsRecords.length > 0 && startMs) {
+          if ((total == null) && epsRecords && epsRecords.length > 0 && startMs) {
             const latest = epsRecords[epsRecords.length - 1];
             total = new Date(latest.time).getTime() - startMs;
           }
 
-          if (!Number.isFinite(total) || total == null || total < 0) return;
+          if (!Number.isFinite(total) || total == null) return;
 
           // Add penalty time
           const penMs = penaltyMap.get(p.bib) || 0;
@@ -470,6 +470,7 @@ export default function LeaderboardPage() {
       gender: selected.gender,
       category: selected.category,
       ageCategory: selected.ageCategory,
+      startTimeRaw: selected.startTimeRaw,
       finishTimeRaw: selected.finishTimeRaw,
       totalTimeDisplay: selected.totalTimeDisplay,
       checkpointTimes: checkpointMap.get(selected.epc) || [],

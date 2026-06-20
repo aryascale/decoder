@@ -98,13 +98,14 @@ export function extractTimeOfDay(raw: string): string {
 }
 
 export function formatDuration(ms: number | null): string {
-  if (ms == null || !Number.isFinite(ms) || ms < 0) return "-";
-  const total = Math.floor(ms / 1000);
+  if (ms == null || !Number.isFinite(ms)) return "-";
+  const isNegative = ms < 0;
+  const total = Math.floor(Math.abs(ms) / 1000);
   const h = Math.floor(total / 3600);
   const m = Math.floor((total % 3600) / 60);
   const s = total % 60;
   const pad = (n: number) => n.toString().padStart(2, "0");
-  return `${pad(h)}:${pad(m)}:${pad(s)}`;
+  return `${isNegative ? "-" : ""}${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
 export function buildOverrideFromFinishDate(finishMs: number, timeStr: string): number | null {

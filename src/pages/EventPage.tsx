@@ -919,7 +919,7 @@ export default function EventPage() {
 
             if (absMs != null && Number.isFinite(absMs)) {
               const delta = finishEntry.ms - absMs;
-              if (Number.isFinite(delta) && delta >= 0) {
+              if (Number.isFinite(delta)) {
                 total = delta;
               } else if (fallbackStartMs) {
                 total = finishEntry.ms - fallbackStartMs;
@@ -928,7 +928,7 @@ export default function EventPage() {
               const builtOverride = buildOverrideFromFinishDate(finishEntry.ms, timeOnly);
               if (builtOverride != null) {
                 const delta = finishEntry.ms - builtOverride;
-                if (Number.isFinite(delta) && delta >= 0) {
+                if (Number.isFinite(delta)) {
                   total = delta;
                 } else if (fallbackStartMs) {
                   total = finishEntry.ms - fallbackStartMs;
@@ -940,7 +940,7 @@ export default function EventPage() {
               total = finishEntry.ms - fallbackStartMs;
             }
 
-            if (!Number.isFinite(total) || total == null || total < 0) {
+            if (!Number.isFinite(total) || total == null) {
               pushIncompleteRow("NO START TIME", fallbackStartMs);
               return;
             }
@@ -1141,6 +1141,7 @@ export default function EventPage() {
       gender: selected.gender,
       category: selected.category,
       ageCategory: selected.ageCategory,
+      startTimeRaw: selected.startTimeRaw,
       finishTimeRaw: selected.finishTimeRaw,
       totalTimeDisplay: selected.totalTimeDisplay,
       checkpointTimes: checkpointMap.get(selected.epc) || [],

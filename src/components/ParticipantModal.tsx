@@ -13,6 +13,7 @@ type Props = {
     gender: string;
     category: string;
     ageCategory?: string;
+    startTimeRaw: string;
     finishTimeRaw: string;
     totalTimeDisplay: string;
     checkpointTimes: string[];
@@ -57,6 +58,7 @@ export default function ParticipantModal({ open, onClose, eventId, eventName, da
         gender: data.gender,
         category: data.category,
         ageCategory: data.ageCategory,
+        startTime: data.startTimeRaw,
         finishTime: data.finishTimeRaw,
         totalTimeDisplay: data.totalTimeDisplay,
         overallRank: data.overallRank,
@@ -136,6 +138,11 @@ export default function ParticipantModal({ open, onClose, eventId, eventName, da
               <div className="modal-item">
                 <div className="label">Race Category</div>
                 <div className="value">{data.category || "-"}</div>
+              </div>
+
+              <div className="modal-item">
+                <div className="label">Start Time</div>
+                <div className="value mono">{data.startTimeRaw || "-"}</div>
               </div>
 
               <div className="modal-item">
