@@ -80,7 +80,7 @@ export default function LeaderboardTable({
 
   const gridColsClass = useMemo(() => {
     const lapCols = Array(maxLapsCount).fill('120px').join('_');
-    return `grid-cols-[80px_120px_minmax(200px,1fr)_120px_140px_140px_120px${lapCols ? '_' + lapCols : ''}_140px]`;
+    return `grid-cols-[80px_120px_minmax(200px,1fr)_120px_140px_140px_120px_140px${lapCols ? '_' + lapCols : ''}_140px]`;
   }, [maxLapsCount]);
 
   const rankedRows = useMemo(() => {
@@ -555,7 +555,7 @@ export default function LeaderboardTable({
               const isSpecial = r.totalTimeDisplay === "DNF" || r.totalTimeDisplay === "DSQ";
 
               return (
-                <div key={r.epc} onClick={() => onSelect?.(r)} className={`grid grid-cols-[80px_120px_minmax(200px,1fr)_120px_140px_140px_120px_140px_140px] gap-4 items-center px-6 py-4 bg-white rounded-2xl border-2 border-stone-200 border-b-[6px] cursor-pointer hover:-translate-y-1 hover:border-stone-300 transition-all ${isTop10 && showTop10Badge ? 'border-yellow-200 bg-yellow-50/50' : ''} ${isSpecial ? 'border-red-200 bg-red-50/50' : ''}`}>
+                <div key={r.epc} onClick={() => onSelect?.(r)} className={`grid ${gridColsClass} gap-4 items-center px-6 py-4 bg-white rounded-2xl border-2 border-stone-200 border-b-[6px] cursor-pointer hover:-translate-y-1 hover:border-stone-300 transition-all ${isTop10 && showTop10Badge ? 'border-yellow-200 bg-yellow-50/50' : ''} ${isSpecial ? 'border-red-200 bg-red-50/50' : ''}`}>
                   <div className="text-center">
                     <span className={`inline-flex items-center justify-center w-12 h-12 rounded-xl text-lg ${getPosStyle(r.rank)}`}>
                       {pos}
