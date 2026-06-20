@@ -11,6 +11,7 @@ export type LeaderRow = {
   sourceCategoryKey: string;
   ageCategory?: string;
   finishTimeRaw: string;
+  startTimeRaw?: string;
   totalTimeMs: number;
   totalTimeDisplay: string;
   penaltyMs?: number;
@@ -80,7 +81,7 @@ export default function LeaderboardTable({
 
   const gridColsClass = useMemo(() => {
     const lapCols = Array(maxLapsCount).fill('120px').join('_');
-    return `grid-cols-[80px_120px_minmax(200px,1fr)_120px_140px_140px_120px_140px${lapCols ? '_' + lapCols : ''}_140px]`;
+    return `grid-cols-[80px_120px_minmax(200px,1fr)_120px_140px_140px_120px_140px_140px${lapCols ? '_' + lapCols : ''}_140px]`;
   }, [maxLapsCount]);
 
   const rankedRows = useMemo(() => {
@@ -541,7 +542,8 @@ export default function LeaderboardTable({
               <div>Category</div>
               <div>Age Category</div>
               <div>Latest CP</div>
-              <div>Time of Day</div>
+              <div>Start Time</div>
+              <div>Finish Time</div>
               {Array.from({ length: maxLapsCount }).map((_, i) => (
                 <div key={i}>Lap {i + 1}</div>
               ))}
@@ -581,6 +583,7 @@ export default function LeaderboardTable({
                   <div>
                     <span className="text-sm font-bold text-blue-600 bg-blue-50 border-2 border-blue-100 border-b-[3px] px-3 py-1.5 rounded-xl inline-block">{r.latestCp || "-"}</span>
                   </div>
+                  <div className="text-sm font-mono font-bold text-stone-400">{r.startTimeRaw || "-"}</div>
                   <div className="text-sm font-mono font-bold text-stone-400">{r.finishTimeRaw || "-"}</div>
                   {Array.from({ length: maxLapsCount }).map((_, i) => {
                     const lap = r.laps?.[i];

@@ -319,6 +319,7 @@ export default function LeaderboardPage() {
             category: p.category || p.sourceCategoryKey,
             sourceCategoryKey: p.sourceCategoryKey,
             ageCategory: p.ageCategory,
+            startTimeRaw: startMs ? extractTimeOfDay(new Date(startMs).toISOString()) : "-",
             finishTimeRaw: extractTimeOfDay(finishEntry?.raw || ""),
             totalTimeMs: total!,
             totalTimeDisplay: isDQ

@@ -873,7 +873,7 @@ export default function EventPage() {
             if (hiddenMap[p.epc]) return;
             const finishEntry = finishMap.get(p.epc);
 
-            const pushIncompleteRow = (status: string) => {
+            const pushIncompleteRow = (statusText: string, computedStartMs?: number | null) => {
               baseRows.push({
                 rank: null,
                 bib: p.bib,
@@ -882,9 +882,10 @@ export default function EventPage() {
                 category: p.category || resolvedCategoryKey,
                 sourceCategoryKey: resolvedCategoryKey,
                 ageCategory: p.ageCategory,
-                finishTimeRaw: finishEntry ? extractTimeOfDay(finishEntry.raw) : '-',
+                startTimeRaw: computedStartMs ? extractTimeOfDay(new Date(computedStartMs).toISOString()) : "-",
+                finishTimeRaw: extractTimeOfDay(finishEntry?.raw || "-"),
                 totalTimeMs: 0,
-                totalTimeDisplay: isDQ ? "DSQ" : status,
+                totalTimeDisplay: isDQ ? "DSQ" : statusText,
                 epc: p.epc,
               });
             };
@@ -940,7 +941,7 @@ export default function EventPage() {
             }
 
             if (!Number.isFinite(total) || total == null || total < 0) {
-              pushIncompleteRow("NO START TIME");
+              pushIncompleteRow("NO START TIME", fallbackStartMs);
               return;
             }
 
@@ -983,6 +984,7 @@ export default function EventPage() {
               category: p.category || resolvedCategoryKey,
               sourceCategoryKey: resolvedCategoryKey,
               ageCategory: p.ageCategory,
+              startTimeRaw: t0Ms ? extractTimeOfDay(new Date(t0Ms).toISOString()) : "-",
               finishTimeRaw: extractTimeOfDay(finishEntry.raw),
               totalTimeMs: total,
               totalTimeDisplay: isDQ ? "DSQ" : isDNF ? "DNF" : formatDuration(total),
