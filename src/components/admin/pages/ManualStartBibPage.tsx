@@ -271,15 +271,11 @@ export default function ManualStartBibPage({ allRows, onDataVersionBump, eventId
                         <td className="name-cell text-sm">{r.name}</td>
                         <td className="text-xs">{r.category}</td>
                         <td className="mono text-xs">{r.finishTimeRaw || "-"}</td>
-                        <td>
+                        <td className="mono text-xs">
                           {msRecord ? (
-                            <span className="inline-block px-2 py-0.5 rounded text-[11px] font-black uppercase bg-blue-100 text-blue-800">
-                              {msRecord.timeStr}
-                            </span>
+                            msRecord.timeStr
                           ) : (
-                            <span className="inline-block px-2 py-0.5 rounded text-[10px] font-black uppercase bg-gray-100 text-gray-500">
-                              {globalManualStartTime ? `Global: ${extractTimeOfDay(globalManualStartTime)}` : "(Global/Cat)"}
-                            </span>
+                            globalManualStartTime ? `GLOBAL: ${extractTimeOfDay(globalManualStartTime)}` : "-"
                           )}
                         </td>
                         <td>
@@ -362,14 +358,8 @@ export default function ManualStartBibPage({ allRows, onDataVersionBump, eventId
                       </div>
                       <div className="text-xs text-gray-400 mt-0.5 mono">Finish: {r.finishTimeRaw || "-"}</div>
                     </div>
-                    <span
-                      className={`px-2 py-1 rounded text-[11px] font-black uppercase ${
-                        msRecord
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-gray-100 text-gray-500'
-                      }`}
-                    >
-                      {msRecord ? msRecord.timeStr : (globalManualStartTime ? `Global: ${extractTimeOfDay(globalManualStartTime)}` : "(Global)")}
+                    <span className="mono text-xs mt-0.5">
+                      {msRecord ? msRecord.timeStr : (globalManualStartTime ? `GLOBAL: ${extractTimeOfDay(globalManualStartTime)}` : "-")}
                     </span>
                   </div>
 
