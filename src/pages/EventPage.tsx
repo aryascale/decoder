@@ -165,7 +165,7 @@ export default function EventPage() {
   const [selected, setSelected] = useState<LeaderRow | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [recalcTick, setRecalcTick] = useState(0);
-  const { recordsByEpc } = useLiveTiming(event?.id || 'default');
+  const { recordsByEpc, checkpoints } = useLiveTiming(event?.id || 'default');
   const [gpxTrackPoints, setGpxTrackPoints] = useState<Array<[number, number]>>([]);
 
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
@@ -886,11 +886,27 @@ export default function EventPage() {
             let finishEntry = finishMap.get(p.epc);
 
             const manualFinishStr = manualFinishMap.get(p.epc);
+            const epsRecords = recordsByEpc[p.epc];
+
             if (manualFinishStr) {
               const mfMs = buildOverrideFromFinishDate(Date.now(), manualFinishStr);
               if (mfMs) {
                 finishEntry = { ms: mfMs, raw: manualFinishStr };
               }
+            }
+
+            // Fallback to Live Record for FINISH checkpoint
+            if (!finishEntry?.ms && epsRecords && epsRecords.length > 0) {
+               const finishRecord = epsRecords.find(r => 
+                  r.checkpointName.toLowerCase().includes('finish') || 
+                  r.identitas.toLowerCase().includes('finish') || 
+                  r.order === 999 || 
+                  (checkpoints.find(cp => cp.identitas === r.identitas)?.name.toLowerCase().includes('finish'))
+               );
+               if (finishRecord) {
+                  const finishRawLocal = new Date(finishRecord.time).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any);
+                  finishEntry = { ms: new Date(finishRecord.time).getTime(), raw: finishRawLocal };
+               }
             }
 
             const pushIncompleteRow = (statusText: string, computedStartMs?: number | null, rawStart?: string | null) => {
@@ -902,7 +918,7 @@ export default function EventPage() {
                 category: p.category || resolvedCategoryKey,
                 sourceCategoryKey: resolvedCategoryKey,
                 ageCategory: p.ageCategory,
-                startTimeRaw: rawStart ? extractTimeOfDay(rawStart) : computedStartMs ? extractTimeOfDay(new Date(computedStartMs).toISOString()) : "-",
+                startTimeRaw: rawStart ? extractTimeOfDay(rawStart) : computedStartMs ? new Date(computedStartMs).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any) : "-",
                 finishTimeRaw: extractTimeOfDay(finishEntry?.raw || "-"),
                 totalTimeMs: 0,
                 totalTimeDisplay: isDQ ? "DSQ" : statusText,
@@ -927,6 +943,20 @@ export default function EventPage() {
             // Individual per-BIB Manual Start Priority overrides Global AND Category Start
             const bibManualStartStr = manualStartMap.get(p.epc);
             let rawStartStr = startEntry?.raw;
+
+            // Fallback to Live Record for START checkpoint
+            if (!fallbackStartMs && epsRecords && epsRecords.length > 0) {
+               const startRecord = epsRecords.find(r => 
+                  r.checkpointName.toLowerCase().includes('start') || 
+                  r.identitas.toLowerCase().includes('start') || 
+                  r.order === 0 || 
+                  (checkpoints.find(cp => cp.identitas === r.identitas)?.name.toLowerCase().includes('start'))
+               );
+               if (startRecord) {
+                  fallbackStartMs = new Date(startRecord.time).getTime();
+                  rawStartStr = new Date(startRecord.time).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any);
+               }
+            }
 
             if (bibManualStartStr) {
               const builtOverride = buildOverrideFromFinishDate(finishEntry.ms, bibManualStartStr);

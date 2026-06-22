@@ -2847,6 +2847,8 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
                         name: eventData.name,
                         eventDate: eventData.eventDate,
                         location: eventData.location,
+                        isLoopMode: eventData.isLoopMode,
+                        minLapTimeMs: eventData.minLapTimeMs,
                         content: {
                           ...(eventData.content || {}),
                           about: homeContent.about || eventData.content?.about || '',
@@ -2880,7 +2882,29 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
           <div className="space-y-6">
             <div className="admin-cutoff">
               <div className="label">Event Details</div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Event ID</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      className="search flex-1 bg-gray-50 font-mono text-gray-500 text-xs"
+                      value={eventId || ''}
+                      readOnly
+                      onClick={(e) => (e.target as HTMLInputElement).select()}
+                      title="Copy this ID for devices"
+                    />
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(eventId || '');
+                        alert('Event ID disalin!');
+                      }}
+                      className="btn whitespace-nowrap px-3 text-xs"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">Event Name</label>
                   <input
@@ -2920,6 +2944,46 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
                     onChange={(e) => setEventData({ ...eventData, location: e.target.value })}
                   />
                 </div>
+              </div>
+            </div>
+
+            <div className="admin-cutoff border-t border-gray-100 pt-6">
+              <div className="label">Laps / Loop Mode</div>
+              <div className="tools">
+                <label className="flex items-center gap-3 cursor-pointer mb-4">
+                  <div className="relative">
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={eventData?.isLoopMode || false}
+                      onChange={(e) => setEventData({ ...eventData, isLoopMode: e.target.checked })}
+                    />
+                    <div className={`block w-14 h-8 rounded-full transition-colors ${eventData?.isLoopMode ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                    <div className={`absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform ${eventData?.isLoopMode ? 'transform translate-x-6' : ''}`}></div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="font-bold text-gray-900">Aktifkan Laps / Loop Mode</span>
+                    <span className="text-xs text-gray-500">
+                      Jika diaktifkan, pelari dapat melewati checkpoint/karpet yang sama berkali-kali dan dihitung sebagai Lap.
+                    </span>
+                  </div>
+                </label>
+
+                {eventData?.isLoopMode && (
+                  <div className="bg-stone-50 border border-stone-200 p-4 rounded-xl">
+                    <label className="block text-sm font-bold text-gray-700 mb-1">Minimal Waktu per Lap (Menit)</label>
+                    <input
+                      type="number"
+                      className="search w-full sm:w-1/3"
+                      placeholder="e.g., 5"
+                      value={eventData?.minLapTimeMs ? eventData.minLapTimeMs / 60000 : 5}
+                      onChange={(e) => setEventData({ ...eventData, minLapTimeMs: (parseInt(e.target.value) || 5) * 60000 })}
+                    />
+                    <div className="text-xs text-gray-500 mt-2">
+                      Guna mencegah duplikasi (Debounce). Jika pelari membaca tag dua kali dalam rentang waktu ini, data kedua akan diabaikan dan <strong>waktu pertama menginjak karpet</strong> akan dipertahankan.
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

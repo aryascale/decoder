@@ -32,6 +32,8 @@ function formatEvent(event: any) {
     bibCustomPrice: event.bibCustomPrice || 0,
     isActive: !!event.isActive,
     isDraft: !!event.isDraft,
+    isLoopMode: !!event.isLoopMode,
+    minLapTimeMs: event.minLapTimeMs || 300000,
     publishAt: event.publishAt instanceof Date ? event.publishAt.toISOString() : event.publishAt,
     categories: event._categories || [],
     content,
@@ -126,7 +128,7 @@ export default async function handler(req: any) {
     }
 
     if (req.httpMethod === 'POST') {
-      const { name, description, eventDate, location, latitude, longitude, isActive, isDraft, publishAt, categories } = parseBody(req);
+      const { name, description, eventDate, location, latitude, longitude, isActive, isDraft, publishAt, categories, isLoopMode, minLapTimeMs } = parseBody(req);
       if (!name || !eventDate) return errorResponse('Name and eventDate are required', 400);
 
       const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -140,8 +142,8 @@ export default async function handler(req: any) {
 
       const eventIdNew = crypto.randomUUID();
       await query(
-        'INSERT INTO Event (id, name, slug, description, eventDate, location, latitude, longitude, isActive, isDraft, publishAt, status, logoUrl, bannerUrl, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
-        [eventIdNew, name, slug, description || null, new Date(eventDate), location || null, latitude || null, longitude || null, isActive ?? true, isDraft ?? false, publishAt ? new Date(publishAt) : null, 'upcoming', null, null]
+        'INSERT INTO Event (id, name, slug, description, eventDate, location, latitude, longitude, isActive, isDraft, publishAt, status, logoUrl, bannerUrl, createdAt, updatedAt, isLoopMode, minLapTimeMs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?)',
+        [eventIdNew, name, slug, description || null, new Date(eventDate), location || null, latitude || null, longitude || null, isActive ?? true, isDraft ?? false, publishAt ? new Date(publishAt) : null, 'upcoming', null, null, isLoopMode ?? false, minLapTimeMs ?? 300000]
       );
 
       const defaultCategories = categories || [];
@@ -195,6 +197,8 @@ export default async function handler(req: any) {
       if (body.longitude !== undefined) { fields.push('longitude = ?'); values.push(body.longitude); }
       if (body.isActive !== undefined) { fields.push('isActive = ?'); values.push(body.isActive); }
       if (body.isDraft !== undefined) { fields.push('isDraft = ?'); values.push(body.isDraft); }
+      if (body.isLoopMode !== undefined) { fields.push('isLoopMode = ?'); values.push(body.isLoopMode); }
+      if (body.minLapTimeMs !== undefined) { fields.push('minLapTimeMs = ?'); values.push(body.minLapTimeMs); }
       if (body.publishAt !== undefined) { fields.push('publishAt = ?'); values.push(body.publishAt ? new Date(body.publishAt) : null); }
       if (body.status !== undefined) { fields.push('status = ?'); values.push(body.status); }
       if (body.logoUrl !== undefined) { fields.push('logoUrl = ?'); values.push(body.logoUrl); }
