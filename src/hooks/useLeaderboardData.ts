@@ -240,7 +240,7 @@ export function useLeaderboardData(eventId: string) {
           }
 
           let isLiveActive = false;
-          if (!Number.isFinite(total) || total == null || total < 0) {
+          if (!Number.isFinite(total) || total == null) {
             isLiveActive = true;
             total = 0;
           }

@@ -82,7 +82,7 @@ export default function LeaderboardTable({
   const gridTemplateColumnsInner = useMemo(() => {
     const lapCols = Array(maxLapsCount).fill('120px').join(' ');
     // Use fixed widths instead of auto to ensure the Header grid and Row grids align perfectly.
-    return `40px 60px minmax(200px, 1fr) 90px 90px 90px 180px ${lapCols ? lapCols + ' ' : ''}`;
+    return `40px 60px minmax(200px, 1fr) 90px 90px 90px 180px 120px 120px ${lapCols ? lapCols + ' ' : ''}`;
   }, [maxLapsCount]);
 
   const rankedRows = useMemo(() => {
@@ -554,6 +554,8 @@ export default function LeaderboardTable({
                 <div>Category</div>
                 <div>Age</div>
                 <div>Latest CP</div>
+                <div>Start Time</div>
+                <div>Finish Time</div>
                 {Array.from({ length: maxLapsCount }).map((_, i) => {
                   const label = rows.find(r => r.laps && r.laps.length > i)?.laps?.[i]?.label || `Lap ${i + 1}`;
                   return <div key={i} className="text-center uppercase" title={label}>{label}</div>;
@@ -599,6 +601,12 @@ export default function LeaderboardTable({
                     </div>
                     <div>
                       <span className="text-[10px] lg:text-xs font-bold text-blue-600 bg-blue-50 border-2 border-blue-100 border-b-[3px] px-2 py-1 rounded-xl inline-block whitespace-nowrap">{r.latestCp || "-"}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] lg:text-xs font-mono font-bold text-stone-500 bg-stone-100 border-2 border-stone-200 border-b-[3px] px-2 py-1 rounded-xl inline-block whitespace-nowrap">{r.startTimeRaw || "-"}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] lg:text-xs font-mono font-bold text-stone-500 bg-stone-100 border-2 border-stone-200 border-b-[3px] px-2 py-1 rounded-xl inline-block whitespace-nowrap">{r.finishTimeRaw || "-"}</span>
                     </div>
                     {Array.from({ length: maxLapsCount }).map((_, i) => {
                       const lap = r.laps?.[i];
