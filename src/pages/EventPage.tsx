@@ -9,7 +9,6 @@ import LeaderboardTable, { LeaderRow } from "../components/LeaderboardTable";
 import ParticipantModal from "../components/ParticipantModal";
 import InteractiveRouteMap from "../components/InteractiveRouteMap";
 import Navbar from "../components/Navbar";
-import { SlideToConfirm } from "../components/ui/SlideToConfirm";
 import { message, Modal, Select, Button, Input } from "antd";
 import {
   loadMasterParticipants,
@@ -66,6 +65,7 @@ interface EventData {
   gpxFile?: string;
   isActive: boolean;
   cutoffMs?: number | null;
+  manualStartTime?: string | null;
   categoryStartTimes?: Record<string, string> | null;
   logoUrl?: string | null;
   bannerUrl?: string | null;
@@ -983,9 +983,9 @@ export default function EventPage() {
             } else if (timeOnly) {
               // Time only requires knowing the finish time to build override, but for laps we might just use the lap time itself
               // For simplicity, we just use fallbackStartMs if available for timeOnly, since lap time building is complex
-              t0Ms = fallbackStartMs;
+              t0Ms = fallbackStartMs || null;
             } else {
-              t0Ms = fallbackStartMs;
+              t0Ms = fallbackStartMs || null;
             }
 
             const laps = rawCheckpoints.map((rawStr, i) => {
@@ -1164,7 +1164,7 @@ export default function EventPage() {
       gender: selected.gender,
       category: selected.category,
       ageCategory: selected.ageCategory,
-      startTimeRaw: selected.startTimeRaw,
+      startTimeRaw: selected.startTimeRaw ?? "-",
       finishTimeRaw: selected.finishTimeRaw,
       totalTimeDisplay: selected.totalTimeDisplay,
       checkpointTimes: checkpointMap.get(selected.epc) || [],
@@ -2996,7 +2996,7 @@ export default function EventPage() {
           className="modern-modal"
           closeIcon={<div className="bg-white/10 hover:bg-white/20 p-2 rounded-full text-white backdrop-blur-md transition-colors"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg></div>}
           styles={{ 
-            content: { padding: 0, overflow: 'hidden', backgroundColor: 'transparent', boxShadow: 'none' },
+            body: { padding: 0, overflow: 'hidden', backgroundColor: 'transparent', boxShadow: 'none' },
             mask: { backdropFilter: 'blur(12px)', backgroundColor: 'rgba(0,0,0,0.85)' }
           }}
         >

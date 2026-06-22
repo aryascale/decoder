@@ -30,6 +30,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Profile from "./pages/Profile";
 import VerifyPage from "./pages/VerifyPage";
+import DevicePage from "./pages/DevicePage";
 
 export default function App() {
   useEffect(() => {
@@ -46,6 +47,7 @@ export default function App() {
         <Route path="/profile" element={<Profile />} /> */}
         <Route path="/verify/:id" element={<VerifyPage />} />
         <Route path="/" element={<LandingPage />} />
+        <Route path="/device/:slug" element={<DevicePage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/leaderboard" element={<UserEventPage />} />
         <Route path="/event" element={<UserEventPage />} />

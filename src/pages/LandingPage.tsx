@@ -116,8 +116,22 @@ export default function LandingPage() {
     },
   ];
 
-
-
+  // Calculate safe parallax to prevent bleeding
+  const getParallaxStyle = (desktopOffset: number, mobileOffset: number) => {
+    const offset = isMobile ? mobileOffset : desktopOffset;
+    const speed = isMobile ? 0.08 : 0.2;
+    // Mobile needs clamped shift because container is portrait (no slack)
+    const maxShift = isMobile ? 60 : 250;
+    
+    let shift = (scrollY - offset) * speed;
+    if (shift > maxShift) shift = maxShift;
+    if (shift < -maxShift) shift = -maxShift;
+    
+    return {
+      backgroundPositionY: `calc(50% + ${shift}px)`,
+      backgroundSize: isMobile ? "auto 130%" : "cover",
+    };
+  };
 
   return (
     <div className="w-full overflow-hidden relative bg-[#F1F3F6]">
@@ -145,7 +159,7 @@ export default function LandingPage() {
         {/* Gradients for smooth edges */}
         <div className="absolute left-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-r from-gray-100 to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-16 sm:w-32 bg-gradient-to-l from-gray-100 to-transparent z-10 pointer-events-none" />
-        
+
         <div className="flex animate-marquee w-max">
           {/* We repeat the items 16 times so it's wide enough. -50% translateX will loop exactly halfway. */}
           {[...Array(16)].map((_, i) => (
@@ -157,15 +171,15 @@ export default function LandingPage() {
       </div>
 
       {/* ===================== PLATFORM ECOSYSTEM — CINEMATIC 3D ===================== */}
-      <section className="overflow-hidden relative" id="platform" style={{ 
+      <section className="overflow-hidden relative" id="platform" style={{
         background: 'radial-gradient(ellipse 120% 80% at 50% 40%, #f0f0f0 0%, #e8e8e8 40%, #f5f5f5 100%)',
-        padding: isMobile ? '40px 0 30px' : '50px 0 40px' 
+        padding: isMobile ? '40px 0 30px' : '50px 0 40px'
       }}>
         {/* Subtle top/bottom vignette */}
         <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(245,245,245,0.8) 0%, transparent 15%, transparent 85%, rgba(245,245,245,0.8) 100%)' }} />
 
         {/* Section Header */}
-        <div className="text-center mb-4 md:mb-6 px-6 relative z-10">
+        <div className="text-center mb-4 md:mb-6 px-6 relative z-10 scroll-reveal">
           <span className="text-red-500 font-extrabold tracking-[0.3em] text-[11px] uppercase mb-2 block">SOFTWARE PLATFORM</span>
           <h2 className="text-4xl sm:text-5xl md:text-7xl font-black uppercase text-stone-900 mb-4 tracking-[-0.04em] leading-[0.92]">COMPLETE<br className="sm:hidden" /> ECOSYSTEM</h2>
           <p className="text-stone-400 max-w-md mx-auto text-sm md:text-[15px] font-medium leading-relaxed">
@@ -174,11 +188,14 @@ export default function LandingPage() {
         </div>
 
         {/* === 3D STAGE === */}
-        <div className={`relative w-full max-w-7xl mx-auto flex items-center justify-center transition-all duration-500 ${isMobile ? 'h-[360px]' : 'h-[600px]'}`}>
+        <div 
+          className={`relative w-full max-w-[100vw] mx-auto flex items-center justify-center transition-all duration-500 -mt-6 md:-mt-8 scroll-reveal ${isMobile ? 'h-[240px]' : 'h-[460px]'}`}
+          style={{ transitionDelay: '200ms' }}
+        >
           {/* Atmospheric glows */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(220,38,38,0.07) 0%, transparent 70%)', filter: 'blur(60px)' }} />
-          
-            <ImageSlider3D 
+
+          <ImageSlider3D
             images={[
               "/Assets/carousel/p1.webp?v=1",
               "/Assets/carousel/p2.webp?v=1",
@@ -194,9 +211,9 @@ export default function LandingPage() {
               "/Assets/carousel/p6.webp?v=1"
             ]}
             duration={45}
-            cardWidth={isMobile ? "18rem" : "60rem"}
-            cardAspectRatio={isMobile ? "12/10" : "16/10"}
-            perspective={isMobile ? "45rem" : "90rem"}
+            cardWidth={isMobile ? "26rem" : "75rem"}
+            cardAspectRatio={isMobile ? "16/10" : "16/9"}
+            perspective={isMobile ? "65rem" : "120rem"}
             withMask={true}
             containerClassName="w-full h-full"
             imageClassName="border border-stone-200/20 shadow-[0_20px_50px_rgba(0,0,0,0.15)] select-none pointer-events-none brightness-[1.02] saturate-[1.05]"
@@ -204,7 +221,10 @@ export default function LandingPage() {
         </div>
 
         {/* Labels with active indicator */}
-        <div className="flex justify-center gap-4 sm:gap-10 md:gap-20 mt-6 md:mt-12 px-4 flex-wrap relative z-10">
+        <div 
+          className="flex justify-center gap-4 sm:gap-10 md:gap-20 mt-2 md:mt-20 px-4 flex-wrap relative z-10 scroll-reveal"
+          style={{ transitionDelay: '400ms' }}
+        >
           {[
             { tag: "#01", title: "White Label" },
             { tag: "#02", title: "Results" },
@@ -259,7 +279,7 @@ export default function LandingPage() {
           className="landing-parallax-block"
           style={{
             backgroundImage: "url('/Assets/landing/swim.webp')",
-            backgroundPositionY: `${(scrollY - 800) * 0.2}px`,
+            ...getParallaxStyle(800, 1300),
           }}
         >
           <div className="landing-parallax-block__overlay landing-parallax-block__overlay--dark" />
@@ -278,7 +298,7 @@ export default function LandingPage() {
           className="landing-parallax-block"
           style={{
             backgroundImage: "url('/Assets/landing/bike.webp')",
-            backgroundPositionY: `${(scrollY - 1400) * 0.2}px`,
+            ...getParallaxStyle(1400, 1800),
           }}
         >
           <div className="landing-parallax-block__overlay" />
@@ -297,7 +317,7 @@ export default function LandingPage() {
           className="landing-parallax-block"
           style={{
             backgroundImage: "url('/Assets/landing/run.webp')",
-            backgroundPositionY: `${(scrollY - 2000) * 0.2}px`,
+            ...getParallaxStyle(2000, 2300),
           }}
         >
           <div className="landing-parallax-block__overlay landing-parallax-block__overlay--red" />
@@ -316,7 +336,7 @@ export default function LandingPage() {
       {/* ===================== SECTION 4: PRODUCT SHOWCASE — APPLE STYLE ===================== */}
       <section className="bg-white py-20 md:py-28" id="products">
         <div className="max-w-7xl mx-auto px-6">
-          
+
           {/* Partnership Editorial Header */}
           <div className="text-center mb-16 md:mb-24 scroll-reveal">
             <div className="flex items-center justify-center gap-3 mb-4">
@@ -334,9 +354,9 @@ export default function LandingPage() {
 
           {/* Grid Layout — Apple Editorial Style */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 scroll-reveal">
-            
+
             {/* CARD 1: Large Featured Card (Span 2 columns on desktop) */}
-            <div className="md:col-span-2 bg-white rounded-[32px] p-8 md:p-12 flex flex-col md:flex-row justify-between items-center overflow-hidden shadow-sm border border-stone-200/40 group hover:shadow-md transition-all duration-500">
+            <div className="md:col-span-2 bg-white rounded-[32px] p-8 md:p-12 flex flex-col md:flex-row justify-between items-center overflow-hidden shadow-sm border border-stone-200/40 group hover:shadow-md transition-all duration-500 cursor-pointer" onClick={() => navigate('/device/pro-time-decoder')}>
               <div className="w-full md:w-[55%] flex flex-col justify-start h-full mb-8 md:mb-0 md:pr-8">
                 <div>
                   <span className="text-stone-400 font-extrabold tracking-widest text-[9px] uppercase">CORE SYSTEM</span>
@@ -350,16 +370,16 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="w-full md:w-[45%] h-[240px] md:h-[300px] flex items-center justify-center">
-                <img 
-                  src="/Assets/landing2/PRO TIME DECODER.webp" 
-                  alt="Pro Time Decoder" 
+                <img
+                  src="/Assets/landing2/PRO TIME DECODER.webp"
+                  alt="Pro Time Decoder"
                   className="max-h-full max-w-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-105"
                 />
               </div>
             </div>
 
             {/* CARD 2: Magic Antenna */}
-            <div className="bg-white rounded-[32px] p-8 md:p-10 flex flex-col justify-between overflow-hidden shadow-sm border border-stone-200/40 group hover:shadow-md transition-all duration-500">
+            <div className="bg-white rounded-[32px] p-8 md:p-10 flex flex-col justify-between overflow-hidden shadow-sm border border-stone-200/40 group hover:shadow-md transition-all duration-500 cursor-pointer" onClick={() => navigate('/device/magic-antenna')}>
               <div className="mb-8">
                 <span className="text-stone-400 font-extrabold tracking-widest text-[9px] uppercase">ANTENNA GRID</span>
                 <h3 className="text-2xl md:text-3xl font-black uppercase text-stone-900 mt-2 mb-3 leading-none tracking-tight">Magic Antenna</h3>
@@ -368,16 +388,16 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="w-full h-[200px] md:h-[220px] flex items-center justify-center mt-auto">
-                <img 
-                  src="/Assets/landing2/MAGIC ANTENNA.webp" 
-                  alt="Magic Antenna" 
+                <img
+                  src="/Assets/landing2/MAGIC ANTENNA.webp"
+                  alt="Magic Antenna"
                   className="max-h-full max-w-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-105"
                 />
               </div>
             </div>
 
             {/* CARD 3: Active Chip */}
-            <div className="bg-white rounded-[32px] p-8 md:p-10 flex flex-col justify-between overflow-hidden shadow-sm border border-stone-200/40 group hover:shadow-md transition-all duration-500">
+            <div className="bg-white rounded-[32px] p-8 md:p-10 flex flex-col justify-between overflow-hidden shadow-sm border border-stone-200/40 group hover:shadow-md transition-all duration-500 cursor-pointer" onClick={() => navigate('/device/active-chip')}>
               <div className="mb-8">
                 <span className="text-red-500 font-extrabold tracking-widest text-[9px] uppercase">REUSABLE TAG</span>
                 <h3 className="text-2xl md:text-3xl font-black uppercase text-stone-900 mt-2 mb-3 leading-none tracking-tight">Active Chip</h3>
@@ -386,16 +406,16 @@ export default function LandingPage() {
                 </p>
               </div>
               <div className="w-full h-[200px] md:h-[220px] flex items-center justify-center mt-auto">
-                <img 
-                  src="/Assets/landing2/Active Chip.webp" 
-                  alt="Active Chip" 
+                <img
+                  src="/Assets/landing2/Active Chip.webp"
+                  alt="Active Chip"
                   className="max-h-full max-w-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-105"
                 />
               </div>
             </div>
 
             {/* CARD 4: Running Chip (Span 2 columns on desktop) */}
-            <div className="md:col-span-2 bg-white rounded-[32px] p-8 md:p-12 flex flex-col md:flex-row justify-between items-center overflow-hidden shadow-sm border border-stone-200/40 group hover:shadow-md transition-all duration-500">
+            <div className="md:col-span-2 bg-white rounded-[32px] p-8 md:p-12 flex flex-col md:flex-row justify-between items-center overflow-hidden shadow-sm border border-stone-200/40 group hover:shadow-md transition-all duration-500 cursor-pointer" onClick={() => navigate('/device/running-chip')}>
               <div className="w-full md:w-[55%] flex flex-col justify-start h-full mb-8 md:mb-0 md:pr-8">
                 <div>
                   <span className="text-stone-400 font-extrabold tracking-widest text-[9px] uppercase">DISPOSABLE TAG</span>
@@ -409,9 +429,9 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="w-full md:w-[45%] h-[240px] md:h-[300px] flex items-center justify-center">
-                <img 
-                  src="/Assets/landing2/RUNNING Chip.webp" 
-                  alt="Running Chip" 
+                <img
+                  src="/Assets/landing2/RUNNING Chip.webp"
+                  alt="Running Chip"
                   className="max-h-full max-w-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-105"
                 />
               </div>
@@ -423,46 +443,52 @@ export default function LandingPage() {
 
 
       {/* ===================== SECTION 8: FAQ ===================== */}
-      <section className="bg-white py-20 md:py-32" id="faq">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-start">
-          
+      <section className="bg-[#f5f5f4] py-20 md:py-32 border-t border-stone-200" id="faq">
+        <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-start">
+
           {/* Left Side: Header & Context */}
-          <div className="md:col-span-5 flex flex-col items-start text-left">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6 tracking-tight leading-[1.1]">
+          <div className="md:col-span-5 flex flex-col items-start text-left scroll-reveal">
+            <span className="text-[#DC2626] font-bold tracking-[0.2em] text-[11px] uppercase mb-4 block">SUPPORT</span>
+            <h2 className="text-4xl md:text-5xl font-black text-[#111] mb-6 tracking-tight leading-[1.1]">
               Frequently asked<br className="hidden md:block" /> questions
             </h2>
-            <p className="text-slate-600 text-[15px] md:text-lg mb-8 leading-relaxed max-w-md">
-              Find quick solutions and helpful tips for using our timing ecosystem. We've compiled answers to the most frequently asked questions right here to ensure a seamless experience.
+            <p className="text-stone-500 text-[15px] md:text-lg font-medium mb-8 leading-relaxed max-w-sm">
+              Find quick solutions and helpful tips for using our timing ecosystem. If you need more details, our technical team is ready to assist.
             </p>
-            <button className="px-6 py-3 bg-[#4F7CFF] text-white text-sm md:text-base rounded-full font-medium shadow-md hover:bg-[#436AE6] transition-colors flex items-center gap-2">
-              Contact support <span>→</span>
+            <button 
+              className="landing-btn landing-btn--primary px-8"
+              style={{ borderRadius: '9999px' }}
+            >
+              CONTACT SUPPORT
             </button>
           </div>
 
           {/* Right Side: Accordion */}
-          <div className="md:col-span-7 flex flex-col gap-4">
+          <div className="md:col-span-7 flex flex-col gap-4 scroll-reveal" style={{ transitionDelay: '200ms' }}>
             {faqs.map((faq, idx) => {
               const isOpen = openFaq === idx;
               return (
-                <div 
-                  key={idx} 
-                  className={`rounded-2xl overflow-hidden transition-all duration-300 ${isOpen ? 'bg-[#4F7CFF] text-white shadow-xl md:scale-[1.02]' : 'bg-white text-slate-900 shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]'}`}
+                <div
+                  key={idx}
+                  className={`rounded-[20px] transition-all duration-500 bg-white border ${isOpen ? 'border-[#DC2626]/20 shadow-[0_8px_30px_rgba(220,38,38,0.06)]' : 'border-stone-200/60 hover:border-stone-300 hover:shadow-[0_4px_20px_rgba(0,0,0,0.04)]'}`}
                 >
                   <button
                     onClick={() => setOpenFaq(isOpen ? null : idx)}
-                    className="w-full px-6 py-5 flex items-center justify-between text-left"
+                    className="w-full px-6 py-6 md:px-8 flex items-center justify-between text-left group"
                   >
-                    <span className="font-medium text-[16px] md:text-[18px] pr-4">{faq.question}</span>
-                    <span className={`transition-transform duration-300 ${isOpen ? 'rotate-180 text-[#00FF66]' : 'text-slate-900'}`}>
-                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    <span className={`font-bold text-[16px] md:text-[18px] tracking-tight pr-4 transition-colors ${isOpen ? 'text-[#DC2626]' : 'text-[#111] group-hover:text-[#DC2626]'}`}>
+                      {faq.question}
+                    </span>
+                    <span className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300 ${isOpen ? 'bg-[#DC2626] text-white rotate-180' : 'bg-stone-100 text-stone-400 group-hover:bg-[#FEF2F2] group-hover:text-[#DC2626]'}`}>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
                       </svg>
                     </span>
                   </button>
-                  <div 
-                    className={`px-6 transition-all duration-300 overflow-hidden ${isOpen ? 'max-h-96 pb-6 opacity-100' : 'max-h-0 opacity-0'}`}
+                  <div
+                    className={`px-6 md:px-8 transition-all duration-500 overflow-hidden ${isOpen ? 'max-h-96 pb-6 md:pb-8 opacity-100' : 'max-h-0 opacity-0'}`}
                   >
-                    <p className={`text-[14px] md:text-base leading-relaxed ${isOpen ? 'text-white/90' : 'text-slate-600'}`}>
+                    <p className="text-[15px] font-medium text-stone-500 leading-relaxed">
                       {faq.answer}
                     </p>
                   </div>
@@ -515,7 +541,7 @@ export default function LandingPage() {
               <a href="#contact" className="hover:text-gray-900 hover:underline transition-colors">Contact IJT</a>
             </div>
           </div>
-          
+
           <div className="border-t border-gray-200 pt-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div className="flex flex-col gap-2">
               <p className="text-gray-400">Hak cipta © 2026 IJT — Indonesia Timing System. Seluruh hak cipta dilindungi undang-undang.</p>
