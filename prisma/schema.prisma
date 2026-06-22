@@ -291,3 +291,17 @@ model ManualStart {
   @@index([eventId])
   @@index([epc])
 }
+
+model ManualFinish {
+  id        String   @id @default(uuid())
+  eventId   String
+  bib       String
+  epc       String
+  timeStr   String   // e.g. "06:30:00"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([eventId, bib])
+  @@index([eventId])
+  @@index([epc])
+}

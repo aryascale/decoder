@@ -524,7 +524,7 @@ export default function LeaderboardTable({
                     </div>
 
                     {/* Right: Race Time */}
-                    <div className="flex flex-col items-end sm:items-end justify-start self-end sm:self-start mt-2 sm:mt-0">
+                    <div className="flex flex-col items-end sm:items-end justify-start self-end sm:self-start mt-2 sm:mt-0 mr-4 lg:mr-8">
                       <div className="text-[9px] uppercase font-black text-stone-400 tracking-widest mb-1 text-right">Race Time</div>
                       <span className={`font-mono font-black text-sm lg:text-lg tracking-tighter bg-stone-100 border-2 border-stone-200 border-b-[4px] px-3 py-1.5 rounded-xl inline-block text-center whitespace-nowrap min-w-[120px] ${isSpecial ? "text-orange-600" : r.totalTimeDisplay === "ACTIVE" ? "text-emerald-600 border-emerald-200 bg-emerald-50" : "text-stone-900"}`}>
                         {r.totalTimeDisplay}

@@ -117,6 +117,18 @@ export function useLeaderboardData(eventId: string) {
           }
         } catch {}
 
+        // Load manual finish map from API
+        const manualFinishMap = new Map<string, string>();
+        try {
+          const mfRes = await fetch(`/api/manual-finish-bib?eventId=${eventId}`);
+          if (mfRes.ok) {
+            const mfData = await mfRes.json();
+            if (Array.isArray(mfData)) {
+              mfData.forEach((mf: any) => manualFinishMap.set(mf.epc, mf.timeStr));
+            }
+          }
+        } catch {}
+
         const absOverrideMs: Record<string, number | null> = {};
         const timeOnlyStr: Record<string, string | null> = {};
 
@@ -177,7 +189,16 @@ export function useLeaderboardData(eventId: string) {
 
         localMasterAll.forEach((p) => {
           if (hiddenMap[p.epc]) return;
-          const finishEntry = finishMap.get(p.epc);
+          let finishEntry = finishMap.get(p.epc);
+          
+          const manualFinishStr = manualFinishMap.get(p.epc);
+          if (manualFinishStr) {
+            // We build a manual finish override based on current date for the missing date parts
+            const mfMs = buildOverrideFromFinishDate(Date.now(), manualFinishStr);
+            if (mfMs) {
+              finishEntry = { ms: mfMs, raw: manualFinishStr };
+            }
+          }
 
           const catKey = normCat(p.sourceCategoryKey);
           let absMs = absOverrideMs[catKey] ?? null;
@@ -345,7 +366,7 @@ export function useLeaderboardData(eventId: string) {
         });
       }
     })();
-  }, [hasLoadedOnce, recalcTick, eventId, currentEvent, categoryMap, checkCpCount, penaltyMap, startMap, finishMap, manualStartMap, overrideMap, statusMap, filterCat, selectedGender, filterAgeGroup, (currentEvent as any)?.manualStartTime, eventLoading, liveLoading]);
+  }, [hasLoadedOnce, recalcTick, eventId, eventCategories, checkpoints, registrations, recordsByEpc, currentEvent?.cutoffMs, currentEvent?.categoryStartTimes, (currentEvent as any)?.manualStartTime, eventLoading, liveLoading]);
 
   return { state, overall, byCategory, eventCategories, forceRecalc, hasLoadedOnce };
 }

@@ -10,6 +10,7 @@ import parseTimeToMs, { extractTimeOfDay, formatDuration } from "../../../lib/ti
 import type { LeaderRow } from "../../LeaderboardTable";
 import PenaltyPage from "./PenaltyPage";
 import ManualStartBibPage from "./ManualStartBibPage";
+import ManualFinishBibPage from "./ManualFinishBibPage";
 import CheckpointsPage from "./CheckpointsPage";
 import AdminLiveTrackingTab from '../tabs/AdminLiveTrackingTab';
 
@@ -43,7 +44,7 @@ function formatNowAsTimestamp(): string {
 }
 
 export default function EventDetailPage({ eventId, eventSlug, eventName, onBack }: EventDetailPageProps) {
-  const [activeTab, setActiveTab] = useState<'homepage' | 'data' | 'live_data' | 'banners' | 'gallery' | 'categories' | 'route' | 'timing' | 'manual_start' | 'dq' | 'penalty' | 'certified' | 'settings' | 'registration' | 'inventory' | 'checkpoints'>(() => {
+  const [activeTab, setActiveTab] = useState<'homepage' | 'data' | 'live_data' | 'banners' | 'gallery' | 'categories' | 'route' | 'timing' | 'manual_start' | 'manual_finish' | 'dq' | 'penalty' | 'certified' | 'settings' | 'registration' | 'inventory' | 'checkpoints'>(() => {
     return (localStorage.getItem(`admin_tab_${eventId}`) as any) || 'homepage';
   });
 
@@ -1217,10 +1218,16 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
           Timing Rules
         </button>
         <button
-          className={`detail-tab whitespace-nowrap ${activeTab === 'manual_start' ? 'active' : ''}`}
           onClick={() => setActiveTab('manual_start')}
+          className={`detail-tab whitespace-nowrap ${activeTab === 'manual_start' ? 'active' : ''}`}
         >
           Manual Start
+        </button>
+        <button
+          onClick={() => setActiveTab('manual_finish')}
+          className={`detail-tab whitespace-nowrap ${activeTab === 'manual_finish' ? 'active' : ''}`}
+        >
+          Manual Finish
         </button>
         <button
           className={`detail-tab whitespace-nowrap ${activeTab === 'dq' ? 'active' : ''}`}
@@ -2093,6 +2100,17 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
             onDataVersionBump={bumpDataVersion}
             eventId={eventId}
             globalManualStartTime={manualStartTime}
+          />
+        </div>
+      )}
+
+      {/* Manual Finish Tab */}
+      {activeTab === 'manual_finish' && (
+        <div className="card">
+          <ManualFinishBibPage
+            allRows={allRows}
+            onDataVersionBump={bumpDataVersion}
+            eventId={eventId}
           />
         </div>
       )}
