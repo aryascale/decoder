@@ -180,9 +180,6 @@ export default function LeaderboardTable({
 
   // Row left-border color for top 3 (like the reference)
   const getRowBorder = (rank: number | null) => {
-    if (rank === 1) return "border-l-[3px] border-l-amber-400";
-    if (rank === 2) return "border-l-[3px] border-l-slate-400";
-    if (rank === 3) return "border-l-[3px] border-l-orange-400";
     return "border-l-[3px] border-l-transparent";
   };
 
@@ -410,9 +407,6 @@ export default function LeaderboardTable({
           <div className="flex flex-col sm:flex-row justify-between items-center sm:items-end gap-4 pb-5 mb-5 border-b border-slate-200">
             <div>
               {title && <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-800">{title}</h2>}
-              <div className="text-sm font-medium text-slate-400 mt-0.5">
-                Displaying <span className="font-bold text-red-500">{showingCount}</span> verified entries
-              </div>
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
