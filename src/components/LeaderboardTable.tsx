@@ -17,7 +17,7 @@ export type LeaderRow = {
   totalTimeDisplay: string;
   penaltyMs?: number;
   epc: string;
-  laps?: { label: string, timeDisplay: string }[];
+  laps?: { label: string, timeDisplay: string, isDuration?: boolean }[];
   latestCp?: string;
 };
 
@@ -613,8 +613,13 @@ export default function LeaderboardTable({
                       <div className="flex gap-2 px-4 pb-3 overflow-x-auto">
                         {r.laps.map((lap, i) => (
                           <div key={i} className="flex-shrink-0 bg-slate-50 border border-slate-100 rounded px-2 py-1">
-                            <span className="text-[9px] font-bold text-slate-400 uppercase block">{lap.label}</span>
-                            <span className="font-mono text-xs font-bold text-slate-600">{lap.timeDisplay}</span>
+                            <div className="flex justify-between items-start gap-3 mb-0.5">
+                              <span className="text-[9px] font-bold text-slate-400 uppercase leading-none">{lap.label}</span>
+                              <span className="text-[7px] font-bold text-slate-300 bg-slate-100/50 px-1 rounded-sm leading-none pt-[1px]" title={lap.isDuration ? "Duration from Start" : "Time of Day"}>
+                                {lap.isDuration ? "DUR" : "JAM"}
+                              </span>
+                            </div>
+                            <span className="font-mono text-xs font-bold text-slate-600 block">{lap.timeDisplay}</span>
                           </div>
                         ))}
                       </div>

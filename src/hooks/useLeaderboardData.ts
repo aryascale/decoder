@@ -20,7 +20,6 @@ export function useLeaderboardData(eventId: string) {
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [overall, setOverall] = useState<LeaderRow[]>([]);
   const [byCategory, setByCategory] = useState<Record<string, LeaderRow[]>>({});
-  const [checkpointMap, setCheckpointMap] = useState<Map<string, string[]>>(new Map());
   const [recalcTick, setRecalcTick] = useState(0);
 
   const { checkpoints, registrations, recordsByEpc, loading: liveLoading } = useLiveTiming(eventId);
@@ -71,7 +70,6 @@ export function useLeaderboardData(eventId: string) {
         const startMap = await loadTimesMap("start", eventId);
         const finishMap = await loadTimesMap("finish", eventId);
         const cpMap = await loadCheckpointTimesMap(eventId);
-        setCheckpointMap(cpMap);
 
         // Use timing from event (per-event database) instead of localStorage
         const cutoffMs = currentEvent?.cutoffMs ?? null;
@@ -200,6 +198,22 @@ export function useLeaderboardData(eventId: string) {
             }
           }
 
+          const epsRecords = recordsByEpc[p.epc];
+
+          // Fallback to Live Record for FINISH checkpoint
+          if (!finishEntry?.ms && epsRecords && epsRecords.length > 0) {
+             const finishRecord = epsRecords.find(r => 
+                r.checkpointName.toLowerCase().includes('finish') || 
+                r.identitas.toLowerCase().includes('finish') || 
+                r.order === 999 || 
+                (checkpoints.find(cp => cp.identitas === r.identitas)?.name.toLowerCase().includes('finish'))
+             );
+             if (finishRecord) {
+                const finishRawLocal = new Date(finishRecord.time).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any);
+                finishEntry = { ms: new Date(finishRecord.time).getTime(), raw: finishRawLocal };
+             }
+          }
+
           const catKey = normCat(p.sourceCategoryKey);
           let absMs = absOverrideMs[catKey] ?? null;
           let timeOnly = timeOnlyStr[catKey] ?? null;
@@ -210,6 +224,20 @@ export function useLeaderboardData(eventId: string) {
           let startMs = manualStartMs || startEntry?.ms;
           
           let rawStartStrForDisplay = startEntry?.raw;
+
+          // Fallback to Live Record for START checkpoint
+          if (!startMs && epsRecords && epsRecords.length > 0) {
+             const startRecord = epsRecords.find(r => 
+                r.checkpointName.toLowerCase().includes('start') || 
+                r.identitas.toLowerCase().includes('start') || 
+                r.order === 0 || 
+                (checkpoints.find(cp => cp.identitas === r.identitas)?.name.toLowerCase().includes('start'))
+             );
+             if (startRecord) {
+                startMs = new Date(startRecord.time).getTime();
+                rawStartStrForDisplay = new Date(startRecord.time).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any);
+             }
+          }
 
           const bibManualStartStr = manualStartMap.get(p.epc);
           if (bibManualStartStr && finishEntry?.ms) {
@@ -224,7 +252,7 @@ export function useLeaderboardData(eventId: string) {
 
           if (absMs != null && Number.isFinite(absMs)) {
             if (!finishEntry?.ms) return;
-            const startStr = extractTimeOfDay(new Date(absMs).toISOString());
+            const startStr = new Date(absMs).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any);
             const startNormalized = buildOverrideFromFinishDate(finishEntry.ms, startStr);
             if (startNormalized != null) {
               total = finishEntry.ms - startNormalized;
@@ -245,7 +273,7 @@ export function useLeaderboardData(eventId: string) {
             }
           } else {
             if (startMs && finishEntry?.ms) {
-              const startStr = extractTimeOfDay(new Date(startMs).toISOString());
+              const startStr = new Date(startMs).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any);
               const startNormalized = buildOverrideFromFinishDate(finishEntry.ms, startStr);
               if (startNormalized != null) {
                 total = finishEntry.ms - startNormalized;
@@ -265,7 +293,6 @@ export function useLeaderboardData(eventId: string) {
           }
 
           let latestCpStr = "-";
-          const epsRecords = recordsByEpc[p.epc];
           if (epsRecords && epsRecords.length > 0) {
             const latest = epsRecords[epsRecords.length - 1];
             const cpTime = new Date(latest.time);
@@ -298,7 +325,7 @@ export function useLeaderboardData(eventId: string) {
              // Find if this EPC has a record for this checkpoint
              const recordForCp = epsRecords?.find((rec: any) => rec.identitas === cpId);
              
-             if (!recordForCp) return { label, timeDisplay: "-" };
+             if (!recordForCp) return { label, timeDisplay: "-", isDuration: false };
              
              const cpTime = new Date(recordForCp.time);
              
@@ -306,12 +333,12 @@ export function useLeaderboardData(eventId: string) {
              if (startMs) {
                 const diffMs = cpTime.getTime() - startMs;
                 if (diffMs > 0) {
-                   return { label, timeDisplay: formatDuration(diffMs) };
+                   return { label, timeDisplay: formatDuration(diffMs), isDuration: true };
                 }
              }
              
              const cpTimeStr = cpTime.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-             return { label, timeDisplay: cpTimeStr };
+             return { label, timeDisplay: cpTimeStr, isDuration: false };
           });
 
           baseRows.push({
@@ -322,7 +349,7 @@ export function useLeaderboardData(eventId: string) {
             category: p.category || p.sourceCategoryKey,
             sourceCategoryKey: p.sourceCategoryKey,
             ageCategory: p.ageCategory,
-            startTimeRaw: rawStartStrForDisplay ? extractTimeOfDay(rawStartStrForDisplay) : startMs ? extractTimeOfDay(new Date(startMs).toISOString()) : "-",
+            startTimeRaw: rawStartStrForDisplay ? extractTimeOfDay(rawStartStrForDisplay) : startMs ? new Date(startMs).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any) : "-",
             finishTimeRaw: extractTimeOfDay(finishEntry?.raw || ""),
             totalTimeMs: total!,
             totalTimeDisplay: isDQ ? "DSQ" : isDNF ? "DNF" : isLiveActive ? "ACTIVE" : formatDuration(total!),

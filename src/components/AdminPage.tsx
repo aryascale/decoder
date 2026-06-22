@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { LeaderRow } from "./LeaderboardTable";
-import { CATEGORY_KEYS, DEFAULT_EVENT_TITLE, LS_DATA_VERSION, LS_EVENT_TITLE, type CsvKind, getCategoriesForEvent } from "../lib/config";
+import { DEFAULT_EVENT_TITLE, LS_DATA_VERSION, LS_EVENT_TITLE, type CsvKind, getCategoriesForEvent } from "../lib/config";
 import { putCsvFile, deleteCsvFile, listCsvMeta } from "../lib/idb";
 import { parseCsv } from "../lib/csvParse";
 import CategoryManager from "./CategoryManager";
@@ -56,7 +56,7 @@ function saveCatStartMap(map: Record<string, string>) {
   localStorage.setItem(LS_CAT_START, JSON.stringify(map));
 }
 
-type AdminSection = 'overview' | 'csv' | 'banners' | 'categories' | 'timing' | 'dsq' | 'events';
+type AdminSection = 'overview' | 'csv' | 'banners' | 'categories' | 'timing' | 'dsq' | 'events' | 'backups';
 
 import { useSearchParams } from "react-router-dom";
 
@@ -667,6 +667,24 @@ export default function AdminPage({
               <div className="card">
                 <h2 className="text-2xl font-bold mb-4">Event Settings</h2>
                 <div className="space-y-4">
+                  {eventId && eventId !== 'default' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Event ID</label>
+                      <div className="flex items-center gap-2">
+                        <code className="flex-1 px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg text-sm font-mono text-gray-800 select-all">{eventId}</code>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(eventId);
+                            alert("Event ID berhasil disalin!");
+                          }}
+                          className="px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+                          title="Copy Event ID"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Event Title</label>
                     <input
@@ -774,6 +792,7 @@ export default function AdminPage({
                     <thead>
                       <tr className="border-b border-gray-200">
                         <th className="text-left py-3 px-4 font-semibold text-gray-700">Name</th>
+                        <th className="text-left py-3 px-4 font-semibold text-gray-700">Event ID</th>
                         <th className="text-left py-3 px-4 font-semibold text-gray-700">Date</th>
                         <th className="text-left py-3 px-4 font-semibold text-gray-700">Location</th>
                         <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
@@ -783,6 +802,16 @@ export default function AdminPage({
                       {events.map((event) => (
                         <tr key={event.id} className="border-b border-gray-100 hover:bg-gray-50">
                           <td className="py-3 px-4 font-medium">{event.name}</td>
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-2">
+                              <code className="bg-gray-100 px-2 py-1 rounded text-xs font-mono text-gray-600">{event.id}</code>
+                              <button onClick={() => { navigator.clipboard.writeText(event.id); alert("ID disalin"); }} className="text-blue-600 hover:text-blue-800 transition-colors" title="Copy Event ID">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
                           <td className="py-3 px-4">{event.date || '-'}</td>
                           <td className="py-3 px-4">{event.location || '-'}</td>
                           <td className="py-3 px-4">
