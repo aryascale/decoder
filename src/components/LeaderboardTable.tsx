@@ -176,11 +176,12 @@ export default function LeaderboardTable({
     );
   };
 
-  const showingCount = filtered.length;
-
-  // Row left-border color for top 3 (like the reference)
+  // Card border style for top 3 (like the reference)
   const getRowBorder = (rank: number | null) => {
-    return "border-l-[3px] border-l-transparent";
+    if (rank === 1) return "border-2 border-[#d4af37] shadow-[0_4px_15px_rgba(212,175,55,0.15)]";
+    if (rank === 2) return "border-2 border-slate-300 shadow-[0_4px_15px_rgba(148,163,184,0.15)]";
+    if (rank === 3) return "border-2 border-[#cd7f32] shadow-[0_4px_15px_rgba(205,127,50,0.15)]";
+    return "border border-slate-200 shadow-sm hover:border-slate-300 hover:shadow-md";
   };
 
   return (
@@ -463,8 +464,8 @@ export default function LeaderboardTable({
           </div>
 
           {/* Table Rows — sharp corners */}
-          <div className="flex flex-col overflow-x-auto">
-            <div className="min-w-[800px] md:min-w-0">
+          <div className="flex flex-col gap-2.5 overflow-x-auto pb-4 pt-1">
+            <div className="min-w-[800px] md:min-w-0 flex flex-col gap-2.5">
               {filtered.map((r) => {
                 const pos = r.rank ?? "-";
                 const isSpecial = r.totalTimeDisplay === "DNF" || r.totalTimeDisplay === "DSQ";
@@ -475,11 +476,11 @@ export default function LeaderboardTable({
                   <div
                     key={r.epc}
                     onClick={() => onSelect?.(r)}
-                    className={`group cursor-pointer transition-all duration-150 hover:bg-slate-50 ${getRowBorder(r.rank)} ${
+                    className={`group cursor-pointer transition-all duration-300 hover:-translate-y-0.5 rounded-xl ${getRowBorder(r.rank)} ${
                       isSpecial ? 'bg-red-50/50' :
                       isActive ? 'bg-emerald-50/30' :
                       'bg-white'
-                    } border-b border-slate-100`}
+                    }`}
                   >
                     {/* Desktop row */}
                     <div className="hidden md:grid grid-cols-[44px_1fr_90px_90px_90px_110px_80px_28px] gap-2 items-center px-4 py-3">
