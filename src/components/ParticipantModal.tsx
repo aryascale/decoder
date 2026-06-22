@@ -114,97 +114,80 @@ export default function ParticipantModal({ open, onClose, eventId, eventName, da
               <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
             </div>
 
-            <div className="modal-header pt-0">
-              <div className="modal-title">Participant Detail</div>
-              <button className="btn ghost" onClick={onClose}>
-                Close
+            <div className="flex justify-between items-center mb-1">
+              <h3 className="text-lg sm:text-xl font-black uppercase tracking-tight text-slate-800">Participant Detail</h3>
+              <button 
+                onClick={onClose} 
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold transition-colors"
+              >
+                ✕
               </button>
             </div>
 
-            <div className="modal-grid">
-              <div className="modal-item">
-                <div className="label">Name</div>
-                <div className="value">{data.name || "-"}</div>
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3 mt-4 max-h-[60vh] sm:max-h-[70vh] overflow-y-auto pr-1 pb-1 scrollbar-hide">
+              <div className="col-span-2 bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <div className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Name</div>
+                <div className="font-semibold text-slate-800 text-sm sm:text-base">{data.name || "-"}</div>
               </div>
 
-              <div className="modal-item">
-                <div className="label">NO BIB</div>
-                <div className="value mono">{data.bib || "-"}</div>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <div className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">NO BIB</div>
+                <div className="font-mono font-bold text-red-500 text-sm sm:text-base">{data.bib || "-"}</div>
               </div>
 
-              <div className="modal-item">
-                <div className="label">Gender</div>
-                <div className="value">{data.gender || "-"}</div>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <div className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Race Category</div>
+                <div className="font-semibold text-slate-800 text-xs sm:text-sm">{data.category || "-"}</div>
               </div>
 
-              <div className="modal-item">
-                <div className="label">Race Category</div>
-                <div className="value">{data.category || "-"}</div>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <div className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Gender</div>
+                <div className="font-semibold text-slate-800 text-xs sm:text-sm">{data.gender || "-"}</div>
               </div>
 
-              <div className="modal-item">
-                <div className="label">Start Time</div>
-                <div className="value mono">{data.startTimeRaw || "-"}</div>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <div className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Age Category</div>
+                <div className="font-semibold text-slate-800 text-xs sm:text-sm">{data.ageCategory?.trim() || "-"}</div>
               </div>
 
-              <div className="modal-item">
-                <div className="label">Finish Time</div>
-                <div className="value mono">{data.finishTimeRaw || "-"}</div>
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <div className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Start Time</div>
+                <div className="font-mono font-semibold text-emerald-600 text-xs sm:text-sm">{data.startTimeRaw || "-"}</div>
               </div>
 
-              <div className="modal-item">
-                <div className="label">Total Time</div>
-                <div className="value mono strong">
-                  {data.totalTimeDisplay || "-"}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <div className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Finish Time</div>
+                <div className="font-mono font-semibold text-rose-500 text-xs sm:text-sm">{data.finishTimeRaw || "-"}</div>
+              </div>
+
+              <div className="col-span-2 bg-slate-800 border border-slate-700 rounded-xl p-3 sm:p-4 flex justify-between items-center shadow-inner">
+                <div>
+                  <div className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Total Time</div>
+                  <div className="font-mono font-black text-white text-lg sm:text-xl">
+                    {data.totalTimeDisplay || "-"}
+                  </div>
                 </div>
-              </div>
-
-              <div className="modal-item">
-                <div className="label">Avg Pace</div>
-                <div className="value mono strong text-yellow-600">
-                  {data.totalTimeMs ? calculatePace(data.totalTimeMs, data.category) : "--:--"} /km
+                <div className="text-right">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Avg Pace</div>
+                  <div className="font-mono font-bold text-yellow-400 text-sm sm:text-base">
+                    {data.totalTimeMs ? calculatePace(data.totalTimeMs, data.category) : "--:--"} /km
+                  </div>
                 </div>
               </div>
 
               {(data.penaltyMs && data.penaltyMs > 0) ? (
-                <div className="modal-item">
-                  <div className="label">Penalty</div>
-                  <div className="value">
-                    <span style={{
-                      display: 'inline-block',
-                      padding: '2px 8px',
-                      borderRadius: 4,
-                      fontSize: '0.75rem',
-                      fontWeight: 800,
-                      background: '#fff7ed',
-                      color: '#c2410c',
-                      border: '1px solid #fed7aa',
-                      fontFamily: 'monospace',
-                    }}>
-                      +{String(Math.floor(data.penaltyMs / 3600000)).padStart(2, '0')}:{String(Math.floor((data.penaltyMs % 3600000) / 60000)).padStart(2, '0')}:{String(Math.floor((data.penaltyMs % 60000) / 1000)).padStart(2, '0')}
-                    </span>
+                <div className="col-span-2 bg-orange-50 border border-orange-200 rounded-xl p-3">
+                  <div className="text-[10px] font-bold text-orange-400 uppercase mb-0.5">Penalty</div>
+                  <div className="font-mono font-bold text-orange-600 text-sm">
+                    +{String(Math.floor(data.penaltyMs / 3600000)).padStart(2, '0')}:{String(Math.floor((data.penaltyMs % 3600000) / 60000)).padStart(2, '0')}:{String(Math.floor((data.penaltyMs % 60000) / 1000)).padStart(2, '0')}
                   </div>
                 </div>
               ) : null}
-
-              {/* Temporarily hidden
-              <div className="modal-item modal-wide">
-                <div className="label">Checkpoint Time</div>
-                <div className="value mono">{cp}</div>
-              </div>
-              */}
-
-              <div className="modal-item">
-                <div className="label">Age Category</div>
-                <div className="value">
-                  {data.ageCategory?.trim() || "-"}
-                </div>
-              </div>
             </div>
 
-            <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+            <div className="mt-4 w-full">
               <button
-                className="btn"
+                className="w-full bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold py-3 sm:py-3.5 px-4 rounded-xl shadow-md transition-all text-sm uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={onDownloadCert}
                 disabled={downloading}
               >
