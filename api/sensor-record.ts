@@ -8,7 +8,7 @@ export default async function handler(req: any) {
 
   try {
     const data = req.body ? JSON.parse(req.body) : {};
-    const { i, e, t } = data;
+    const { i, e, t, eventId } = data;
 
     if (!i || !e || !t) {
       return { statusCode: 400, body: JSON.stringify({ error: 'Missing required fields (i, e, t)' }), headers: {} };
@@ -31,7 +31,7 @@ export default async function handler(req: any) {
       ms
     );
 
-    let activeEventId = req.queryStringParameters?.eventId || null;
+    let activeEventId = req.queryStringParameters?.eventId || eventId || null;
 
     if (!activeEventId) {
       // Find active event that owns this checkpoint identity (most recent first)
@@ -83,20 +83,51 @@ export default async function handler(req: any) {
     }
     const checkpoint = checkpoints[0];
 
-    // Upsert record
+    // Fetch event settings for loop mode
+    const eventSettings: any[] = await query(
+      `SELECT isLoopMode, minLapTimeMs FROM Event WHERE id = ? LIMIT 1`,
+      [activeEventId]
+    );
+    const isLoopMode = eventSettings.length > 0 && eventSettings[0].isLoopMode;
+    const minLapTimeMs = eventSettings.length > 0 ? eventSettings[0].minLapTimeMs || 300000 : 300000;
+
+    // Fetch the latest record for this runner at this checkpoint
     const existingRecords: any[] = await query(
-      `SELECT id FROM RunnerRecord WHERE eventId = ? AND epc = ? AND checkpointId = ? LIMIT 1`,
+      `SELECT id, time FROM RunnerRecord WHERE eventId = ? AND epc = ? AND checkpointId = ? ORDER BY time DESC LIMIT 1`,
       [activeEventId, e, checkpoint.id]
     );
 
     let record;
     if (existingRecords.length > 0) {
-      await query(
-        `UPDATE RunnerRecord SET time = ? WHERE id = ?`,
-        [recordTime, existingRecords[0].id]
-      );
-      record = { id: existingRecords[0].id, eventId: activeEventId, epc: e, checkpointId: checkpoint.id, time: recordTime, checkpoint };
+      const latestRecord = existingRecords[0];
+      
+      if (isLoopMode) {
+        const timeDiffMs = recordTime.getTime() - new Date(latestRecord.time).getTime();
+        
+        if (timeDiffMs < minLapTimeMs) {
+          // Debounce: Runner is still at the checkpoint.
+          // The user requested to keep the *first* time they step on the carpet,
+          // so we DO NOT update the time here. We just return the existing record.
+          record = { id: latestRecord.id, eventId: activeEventId, epc: e, checkpointId: checkpoint.id, time: latestRecord.time, checkpoint };
+        } else {
+          // New Lap
+          const recordId = `record-${Date.now()}`;
+          await query(
+            `INSERT INTO RunnerRecord (id, eventId, epc, checkpointId, time, createdAt) VALUES (?, ?, ?, ?, ?, NOW())`,
+            [recordId, activeEventId, e, checkpoint.id, recordTime]
+          );
+          record = { id: recordId, eventId: activeEventId, epc: e, checkpointId: checkpoint.id, time: recordTime, checkpoint };
+        }
+      } else {
+        // Legacy behavior: UPSERT (Update existing time)
+        await query(
+          `UPDATE RunnerRecord SET time = ? WHERE id = ?`,
+          [recordTime, latestRecord.id]
+        );
+        record = { id: latestRecord.id, eventId: activeEventId, epc: e, checkpointId: checkpoint.id, time: recordTime, checkpoint };
+      }
     } else {
+      // First time crossing this checkpoint
       const recordId = `record-${Date.now()}`;
       await query(
         `INSERT INTO RunnerRecord (id, eventId, epc, checkpointId, time, createdAt) VALUES (?, ?, ?, ?, ?, NOW())`,
