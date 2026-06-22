@@ -82,7 +82,7 @@ export default function LeaderboardTable({
   const gridTemplateColumnsInner = useMemo(() => {
     const lapCols = Array(maxLapsCount).fill('120px').join(' ');
     // Use fixed widths instead of auto to ensure the Header grid and Row grids align perfectly.
-    return `40px 60px minmax(200px, 1fr) 90px 90px 90px 180px 120px 120px ${lapCols ? lapCols + ' ' : ''}`;
+    return `40px 60px minmax(180px, 1fr) 90px 90px 90px 160px ${lapCols ? lapCols + ' ' : ''}`;
   }, [maxLapsCount]);
 
   const rankedRows = useMemo(() => {
@@ -554,14 +554,16 @@ export default function LeaderboardTable({
                 <div>Category</div>
                 <div>Age</div>
                 <div>Latest CP</div>
-                <div>Start Time</div>
-                <div>Finish Time</div>
                 {Array.from({ length: maxLapsCount }).map((_, i) => {
                   const label = rows.find(r => r.laps && r.laps.length > i)?.laps?.[i]?.label || `Lap ${i + 1}`;
                   return <div key={i} className="text-center uppercase" title={label}>{label}</div>;
                 })}
               </div>
-              <div className="w-[120px] lg:w-[160px] flex-shrink-0 text-right pr-6">Race Time</div>
+              <div className="w-[280px] flex-shrink-0 grid grid-cols-3 gap-1 text-center pr-4">
+                <div>Start</div>
+                <div>Finish</div>
+                <div>Race Time</div>
+              </div>
             </div>
 
             {/* Rows */}
@@ -602,12 +604,6 @@ export default function LeaderboardTable({
                     <div>
                       <span className="text-[10px] lg:text-xs font-bold text-blue-600 bg-blue-50 border-2 border-blue-100 border-b-[3px] px-2 py-1 rounded-xl inline-block whitespace-nowrap">{r.latestCp || "-"}</span>
                     </div>
-                    <div>
-                      <span className="text-[10px] lg:text-xs font-mono font-bold text-stone-500 bg-stone-100 border-2 border-stone-200 border-b-[3px] px-2 py-1 rounded-xl inline-block whitespace-nowrap">{r.startTimeRaw || "-"}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] lg:text-xs font-mono font-bold text-stone-500 bg-stone-100 border-2 border-stone-200 border-b-[3px] px-2 py-1 rounded-xl inline-block whitespace-nowrap">{r.finishTimeRaw || "-"}</span>
-                    </div>
                     {Array.from({ length: maxLapsCount }).map((_, i) => {
                       const lap = r.laps?.[i];
                       return (
@@ -618,11 +614,19 @@ export default function LeaderboardTable({
                     })}
                   </div>
                   
-                  {/* Outer Label (Race Time / ACTIVE) */}
-                  <div className="w-[120px] lg:w-[160px] flex-shrink-0 text-right pr-2 lg:pr-6">
-                    <span className={`font-mono font-black text-sm lg:text-lg tracking-tighter bg-stone-100 border-2 border-stone-200 border-b-[4px] px-2 lg:px-3 py-1.5 rounded-xl inline-block w-full text-center ${isSpecial ? "text-orange-600" : r.totalTimeDisplay === "ACTIVE" ? "text-emerald-600 border-emerald-200 bg-emerald-50" : "text-stone-900"}`}>
-                      {r.totalTimeDisplay}
-                    </span>
+                  {/* Timing Block (Start / Finish / Race Time) */}
+                  <div className="w-[280px] flex-shrink-0 grid grid-cols-3 gap-1 items-center pr-2 lg:pr-4">
+                    <div className="text-center">
+                      <span className="font-mono text-[10px] lg:text-xs font-bold text-stone-500 whitespace-nowrap">{r.startTimeRaw || "-"}</span>
+                    </div>
+                    <div className="text-center">
+                      <span className="font-mono text-[10px] lg:text-xs font-bold text-stone-500 whitespace-nowrap">{r.finishTimeRaw || "-"}</span>
+                    </div>
+                    <div className="text-center">
+                      <span className={`font-mono font-black text-xs lg:text-sm tracking-tighter bg-stone-100 border-2 border-stone-200 border-b-[4px] px-2 py-1.5 rounded-xl inline-block w-full text-center ${isSpecial ? "text-orange-600" : r.totalTimeDisplay === "ACTIVE" ? "text-emerald-600 border-emerald-200 bg-emerald-50" : r.totalTimeDisplay === "INVALID" ? "text-red-500" : "text-stone-900"}`}>
+                        {r.totalTimeDisplay}
+                      </span>
+                    </div>
                   </div>
                 </div>
               )
