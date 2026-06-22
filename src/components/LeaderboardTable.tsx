@@ -561,7 +561,7 @@ export default function LeaderboardTable({
                   return <div key={i} className="text-center uppercase" title={label}>{label}</div>;
                 })}
               </div>
-              <div className="w-[120px] flex-shrink-0 text-right pr-6">Race Time</div>
+              <div className="w-[120px] lg:w-[160px] flex-shrink-0 text-right pr-6">Race Time</div>
             </div>
 
             {/* Rows */}
@@ -619,8 +619,8 @@ export default function LeaderboardTable({
                   </div>
                   
                   {/* Outer Label (Race Time / ACTIVE) */}
-                  <div className="w-[100px] lg:w-[120px] flex-shrink-0 text-right pr-2 lg:pr-6">
-                    <span className={`font-mono font-black text-sm lg:text-lg tracking-tighter bg-stone-100 border-2 border-stone-200 border-b-[4px] px-3 py-1.5 rounded-xl inline-block w-full text-center ${isSpecial ? "text-orange-600" : r.totalTimeDisplay === "ACTIVE" ? "text-emerald-600 border-emerald-200 bg-emerald-50" : "text-stone-900"}`}>
+                  <div className="w-[120px] lg:w-[160px] flex-shrink-0 text-right pr-2 lg:pr-6">
+                    <span className={`font-mono font-black text-sm lg:text-lg tracking-tighter bg-stone-100 border-2 border-stone-200 border-b-[4px] px-2 lg:px-3 py-1.5 rounded-xl inline-block w-full text-center ${isSpecial ? "text-orange-600" : r.totalTimeDisplay === "ACTIVE" ? "text-emerald-600 border-emerald-200 bg-emerald-50" : "text-stone-900"}`}>
                       {r.totalTimeDisplay}
                     </span>
                   </div>
