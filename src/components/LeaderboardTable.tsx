@@ -1,6 +1,7 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { exportLeaderboardCSV } from "../lib/csv";
+import { calculatePace } from "../lib/time";
 
 export type LeaderRow = {
   rank: number | null;
@@ -193,67 +194,7 @@ export default function LeaderboardTable({
     return "bg-black text-white font-bold opacity-80";
   };
 
-  // Modern Sleek Card for Mobile
-  const MobileCard = ({ r }: { r: LeaderRow }) => {
-    const pos = r.rank ?? "-";
-    const isTop10 = r.rank != null && r.rank <= 10;
-    const isSpecial = r.totalTimeDisplay === "DNF" || r.totalTimeDisplay === "DSQ";
 
-    return (
-      <div
-        className={`bg-white border-2 border-stone-200 border-b-[6px] rounded-2xl p-5 cursor-pointer transition-all duration-300 transform hover:-translate-y-1 ${isTop10 && showTop10Badge ? "border-yellow-200 bg-yellow-50/30" : isSpecial ? "border-red-300 bg-red-50/30" : ""
-          }`}
-        onClick={() => onSelect?.(r)}
-      >
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-4 w-full">
-            <span className={`w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-xl text-xl ${getPosStyle(r.rank)}`}>
-              {pos}
-            </span>
-            <div className="flex-1 min-w-0">
-              <div className="font-extrabold text-stone-900 tracking-tight text-lg leading-tight mb-1 truncate">{r.name || "-"}</div>
-              <span className="font-mono font-bold text-red-600 bg-red-50 border-2 border-red-100 border-b-4 px-2 py-0.5 rounded-lg text-xs inline-block">
-                BIB {r.bib || "-"}
-              </span>
-            </div>
-          </div>
-        </div>
-        <div className="flex justify-between items-end pt-3 border-t-2 border-dashed border-stone-100">
-          <div className="flex gap-2 text-xs font-bold text-stone-400 flex-wrap">
-            <div className="bg-stone-100 border-2 border-stone-200 border-b-[3px] px-2 py-1 rounded-lg">{r.gender || "-"}</div>
-            <div className="bg-stone-100 border-2 border-stone-200 border-b-[3px] px-2 py-1 rounded-lg">{r.category || "-"}</div>
-            {r.ageCategory && <div className="bg-stone-100 border-2 border-stone-200 border-b-[3px] px-2 py-1 rounded-lg">{r.ageCategory}</div>}
-          </div>
-          <div className="text-right">
-            <div className="flex gap-4 items-end justify-end mb-2">
-              <div className="text-right">
-                <div className="text-[9px] uppercase font-black text-stone-400 tracking-widest mb-0.5">Start</div>
-                <div className="font-mono text-xs font-bold text-stone-500">{r.startTimeRaw || "-"}</div>
-              </div>
-              <div className="text-right">
-                <div className="text-[9px] uppercase font-black text-stone-400 tracking-widest mb-0.5">Finish</div>
-                <div className="font-mono text-xs font-bold text-stone-500">{r.finishTimeRaw || "-"}</div>
-              </div>
-            </div>
-            <div className="text-[10px] uppercase font-black text-stone-400 tracking-widest mb-1">Race Time</div>
-            <div className={`font-mono text-xl font-black tracking-tighter bg-stone-100 border-2 border-stone-200 border-b-4 px-3 py-1 rounded-xl inline-block ${isSpecial ? "text-orange-600" : "text-stone-900"}`}>
-              {r.totalTimeDisplay}
-            </div>
-          </div>
-        </div>
-        {r.laps && r.laps.length > 0 && (
-          <div className="flex gap-2 mt-3 pt-3 border-t-2 border-dashed border-stone-100 overflow-x-auto pb-1">
-            {r.laps.map((lap, i) => (
-              <div key={i} className="flex flex-col flex-shrink-0 bg-stone-50 border-2 border-stone-100 rounded-lg px-2 py-1">
-                <span className="text-[10px] font-bold text-stone-400 uppercase">{lap.label}</span>
-                <span className="font-mono text-sm font-bold text-stone-700">{lap.timeDisplay}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <div className="editorial-table-wrapper w-full">
@@ -524,44 +465,8 @@ export default function LeaderboardTable({
             </div>
           </div>
 
-          {/* Mobile Feed View */}
-          <div className="md:hidden space-y-4">
-            {filtered.map((r) => (
-              <MobileCard key={r.epc} r={r} />
-            ))}
-            {filtered.length === 0 && (
-              <div className="text-center py-16 bg-stone-50 rounded-xl border-2 border-dashed border-stone-200 px-4">
-                <div className="font-black text-xl text-stone-300 mb-2">NO RECORDS FOUND</div>
-                <div className="text-sm font-medium text-stone-400">
-                  {rows.length === 0
-                    ? "Starting block is empty. Awaiting timing data."
-                    : "No matching BIBs or Names found."}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Desktop Table View (Duolingo Style) */}
-          <div className="hidden md:flex flex-col gap-3 overflow-x-auto pb-4">
-            {/* Header */}
-            <div className="flex gap-2 lg:gap-4 items-center px-4 lg:px-6 py-2 mx-2 text-[11px] font-black tracking-widest text-stone-400 uppercase min-w-0">
-              <div className="flex-1 grid gap-3 lg:gap-4 items-center min-w-0" style={{ gridTemplateColumns: gridTemplateColumnsInner }}>
-                <div className="text-center">Pos</div>
-                <div>BIB</div>
-                <div>Athlete Name</div>
-                <div>Gender</div>
-                <div>Category</div>
-                <div>Age Category</div>
-                <div>Time of Day</div>
-                {Array.from({ length: maxLapsCount }).map((_, i) => {
-                  const label = rows.find(r => r.laps && r.laps.length > i)?.laps?.[i]?.label || `Lap ${i + 1}`;
-                  return <div key={i} className="text-center uppercase" title={label}>{label}</div>;
-                })}
-              </div>
-              <div className="w-[140px] flex-shrink-0 text-right">Race Time</div>
-            </div>
-
-            {/* Rows */}
+          {/* Unified Card Feed View */}
+          <div className="flex flex-col gap-3 pb-4">
             {filtered.map((r) => {
               const pos = r.rank ?? "-";
               const isTop10 = r.rank != null && r.rank <= 10;
@@ -571,63 +476,96 @@ export default function LeaderboardTable({
                 <div 
                   key={r.epc} 
                   onClick={() => onSelect?.(r)}
-                  className={`flex gap-2 lg:gap-4 items-center px-4 lg:px-6 py-3 lg:py-4 mx-2 bg-white rounded-2xl border-2 border-stone-200 border-b-[6px] cursor-pointer hover:-translate-y-1 hover:border-stone-300 transition-all min-w-0 ${isTop10 && showTop10Badge ? 'border-yellow-200 bg-yellow-50/50' : ''} ${isSpecial ? 'border-red-200 bg-red-50/50' : ''}`}
+                  className={`flex flex-col bg-white rounded-2xl border-2 border-stone-200 border-b-[6px] cursor-pointer hover:-translate-y-1 hover:border-stone-300 transition-all min-w-0 ${isTop10 && showTop10Badge ? 'border-yellow-200 bg-yellow-50/50' : ''} ${isSpecial ? 'border-red-200 bg-red-50/50' : ''}`}
                 >
-                  <div 
-                    className="flex-1 grid gap-3 lg:gap-4 items-center min-w-0" 
-                    style={{ gridTemplateColumns: gridTemplateColumnsInner }}
-                  >
-                    <div className="text-center">
-                      <span className={`inline-flex items-center justify-center w-10 h-10 rounded-xl text-base ${getPosStyle(r.rank)}`}>
+                  {/* Top Section */}
+                  <div className="flex flex-col sm:flex-row justify-between p-4 lg:p-5 gap-4">
+                    {/* Left: Pos + Athlete Details */}
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      {/* Pos Badge */}
+                      <span className={`flex-shrink-0 inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-xl text-lg sm:text-xl font-black ${getPosStyle(r.rank)}`}>
                         {pos}
                       </span>
+                      
+                      {/* Athlete Info */}
+                      <div className="flex flex-col gap-1.5 min-w-0">
+                        <div className="font-extrabold text-stone-900 tracking-tight text-base sm:text-lg lg:text-xl truncate max-w-full">
+                          {r.name || "-"}
+                        </div>
+                        
+                        {/* Pills */}
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                          <span className="font-mono font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 sm:px-2 py-0.5 rounded text-[10px] lg:text-xs">
+                            *{r.bib || "-"}
+                          </span>
+                          <span className="font-bold text-stone-600 bg-stone-100 border border-stone-200 px-1.5 sm:px-2 py-0.5 rounded text-[10px] lg:text-xs">
+                            {r.gender || "-"}
+                          </span>
+                          <span className="font-bold text-stone-600 bg-stone-100 border border-stone-200 px-1.5 sm:px-2 py-0.5 rounded text-[10px] lg:text-xs">
+                            {r.category || "-"}
+                          </span>
+                          {r.ageCategory && (
+                            <span className="font-bold text-stone-600 bg-stone-100 border border-stone-200 px-1.5 sm:px-2 py-0.5 rounded text-[10px] lg:text-xs">
+                              {r.ageCategory}
+                            </span>
+                          )}
+                        </div>
+                        
+                        {/* Pace */}
+                        <div className="text-[10px] font-black text-stone-400 mt-1 uppercase tracking-widest flex items-center gap-1">
+                          Pace <span className="text-yellow-600">{calculatePace(r.totalTimeMs, r.category)} /km</span>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <span className="font-mono font-bold text-red-600 bg-red-50 border-2 border-red-100 border-b-[4px] px-2 py-1 rounded-xl inline-block text-xs lg:text-sm">
-                        {r.bib || "-"}
+
+                    {/* Right: Race Time */}
+                    <div className="flex flex-col items-end sm:items-end justify-start self-end sm:self-start mt-2 sm:mt-0">
+                      <div className="text-[9px] uppercase font-black text-stone-400 tracking-widest mb-1 text-right">Race Time</div>
+                      <span className={`font-mono font-black text-sm lg:text-lg tracking-tighter bg-stone-100 border-2 border-stone-200 border-b-[4px] px-3 py-1.5 rounded-xl inline-block text-center whitespace-nowrap min-w-[120px] ${isSpecial ? "text-orange-600" : r.totalTimeDisplay === "ACTIVE" ? "text-emerald-600 border-emerald-200 bg-emerald-50" : "text-stone-900"}`}>
+                        {r.totalTimeDisplay}
                       </span>
                     </div>
-                    <div className="min-w-0">
-                      <div className="font-extrabold text-stone-900 tracking-tight text-base lg:text-lg truncate">{r.name || "-"}</div>
+                  </div>
+
+                  {/* Bottom Bar: Timestamps */}
+                  <div className="flex flex-wrap md:flex-nowrap items-center bg-stone-50 border-t-2 border-stone-100 rounded-b-xl overflow-hidden divide-y md:divide-y-0 md:divide-x-2 divide-stone-100">
+                    <div className="flex-1 px-4 py-2 sm:px-5 sm:py-3">
+                      <div className="text-[9px] uppercase font-black text-stone-400 tracking-widest mb-0.5">Start</div>
+                      <div className="font-mono text-[10px] sm:text-xs font-bold text-blue-600">{r.startTimeRaw || "-"}</div>
                     </div>
-                    <div>
-                      <span className="text-[10px] lg:text-xs font-bold text-stone-500 bg-stone-100 border-2 border-stone-200 border-b-[3px] px-2 py-1 rounded-xl inline-block whitespace-nowrap">{r.gender || "-"}</span>
+                    <div className="flex-1 px-4 py-2 sm:px-5 sm:py-3">
+                      <div className="text-[9px] uppercase font-black text-stone-400 tracking-widest mb-0.5">Finish</div>
+                      <div className="font-mono text-[10px] sm:text-xs font-bold text-emerald-600">{r.finishTimeRaw || "-"}</div>
                     </div>
-                    <div>
-                      <span className="text-[10px] lg:text-xs font-bold text-stone-500 bg-stone-100 border-2 border-stone-200 border-b-[3px] px-2 py-1 rounded-xl inline-block whitespace-nowrap">{r.category || "-"}</span>
+                    <div className="flex-1 px-4 py-2 sm:px-5 sm:py-3">
+                      <div className="text-[9px] uppercase font-black text-stone-400 tracking-widest mb-0.5">Total</div>
+                      <div className="font-mono text-[10px] sm:text-xs font-bold text-red-500">
+                        {r.totalTimeDisplay === "INVALID" ? "Start time tidak valid" : r.totalTimeDisplay}
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-[10px] lg:text-xs font-bold text-stone-500 bg-stone-100 border-2 border-stone-200 border-b-[3px] px-2 py-1 rounded-xl inline-block whitespace-nowrap">{r.ageCategory || "-"}</span>
-                    </div>
-                    <div>
-                      <span className="font-mono text-xs lg:text-sm font-bold text-stone-600 whitespace-nowrap">{r.finishTimeRaw || "-"}</span>
-                    </div>
-                    {Array.from({ length: maxLapsCount }).map((_, i) => {
-                      const lap = r.laps?.[i];
-                      return (
-                        <div key={i} className="text-[10px] lg:text-xs font-mono font-bold text-stone-600 whitespace-nowrap text-center">
-                          {lap ? lap.timeDisplay : "-"}
-                        </div>
-                      );
-                    })}
                   </div>
                   
-                  {/* Race Time Pill */}
-                  <div className="w-[140px] flex-shrink-0 text-right">
-                    <span className={`font-mono font-black tracking-tighter bg-stone-100 border-2 border-stone-200 border-b-[4px] px-2 py-1.5 rounded-xl inline-block w-full text-center overflow-hidden text-ellipsis whitespace-nowrap ${r.totalTimeDisplay.length > 9 ? 'text-xs' : 'text-sm lg:text-lg'} ${isSpecial ? "text-orange-600" : r.totalTimeDisplay === "ACTIVE" ? "text-emerald-600 border-emerald-200 bg-emerald-50" : "text-stone-900"}`}>
-                      {r.totalTimeDisplay}
-                    </span>
-                  </div>
+                  {/* Laps (if any) */}
+                  {r.laps && r.laps.length > 0 && (
+                    <div className="flex gap-2 p-3 sm:p-4 border-t-2 border-dashed border-stone-100 bg-white overflow-x-auto rounded-b-xl">
+                      {r.laps.map((lap, i) => (
+                        <div key={i} className="flex flex-col flex-shrink-0 bg-stone-50 border-2 border-stone-100 rounded-lg px-2 py-1">
+                          <span className="text-[10px] font-bold text-stone-400 uppercase">{lap.label}</span>
+                          <span className="font-mono text-xs sm:text-sm font-bold text-stone-700">{lap.timeDisplay}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              )
+              );
             })}
 
             {filtered.length === 0 && (
-              <div className="px-6 py-16 text-center bg-stone-50 border-2 border-stone-200 border-b-[6px] rounded-2xl mx-2">
+              <div className="text-center py-16 bg-stone-50 rounded-2xl border-2 border-dashed border-stone-200 px-4">
                 <div className="font-black text-2xl text-stone-300 mb-2 tracking-tighter uppercase">No Tracking Data</div>
                 <div className="text-sm font-medium text-stone-500">
                   {rows.length === 0
-                    ? "The leaderboards are currently empty."
+                    ? "The leaderboards are currently empty. Awaiting timing data."
                     : `No results found for "${q}".`}
                 </div>
               </div>

@@ -138,3 +138,25 @@ export function buildOverrideFromFinishDate(finishMs: number, timeStr: string): 
   );
   return override.getTime();
 }
+
+export function calculatePace(totalMs: number | null, category: string | undefined): string {
+  if (totalMs == null || totalMs < 0 || !Number.isFinite(totalMs)) return "--:--";
+  
+  let distance = 0;
+  const catLower = category?.toLowerCase() || "";
+  if (catLower.includes("5")) distance = 5;
+  if (catLower.includes("10")) distance = 10;
+  if (catLower.includes("21")) distance = 21.0975;
+  if (catLower.includes("42")) distance = 42.195;
+  
+  if (distance === 0) return "--:--"; 
+  
+  const totalSeconds = Math.floor(totalMs / 1000);
+  const paceSeconds = totalSeconds / distance;
+  
+  const minutes = Math.floor(paceSeconds / 60);
+  const seconds = Math.round(paceSeconds % 60);
+  
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${pad(minutes)}:${pad(seconds)}`;
+}
