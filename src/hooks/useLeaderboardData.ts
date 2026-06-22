@@ -11,7 +11,7 @@ export type LoadState =
   | { status: "ready" };
 
 export function useLeaderboardData(eventId: string) {
-  const { currentEvent, eventData, loading: eventLoading } = useEvent();
+  const { currentEvent, loading: eventLoading } = useEvent();
   const [state, setState] = useState<LoadState>({
     status: "loading",
     msg: "Loading CSV data…",
@@ -184,7 +184,7 @@ export function useLeaderboardData(eventId: string) {
           let timeOnly = timeOnlyStr[catKey] ?? null;
 
           let total: number | null = null;
-          const manualStartMs = eventData?.manualStartTime ? new Date(eventData.manualStartTime).getTime() : null;
+          const manualStartMs = (currentEvent as any)?.manualStartTime ? new Date((currentEvent as any).manualStartTime).getTime() : null;
           let startMs = manualStartMs || startMap.get(p.epc)?.ms;
           
           const bibManualStartStr = manualStartMap.get(p.epc);
@@ -198,6 +198,7 @@ export function useLeaderboardData(eventId: string) {
           }
 
           if (absMs != null && Number.isFinite(absMs)) {
+            if (!finishEntry?.ms) return;
             const startStr = extractTimeOfDay(new Date(absMs).toISOString());
             const startNormalized = buildOverrideFromFinishDate(finishEntry.ms, startStr);
             if (startNormalized != null) {
@@ -207,6 +208,7 @@ export function useLeaderboardData(eventId: string) {
               total = finishEntry.ms - absMs;
             }
           } else if (timeOnly) {
+            if (!finishEntry?.ms) return;
             const builtOverride = buildOverrideFromFinishDate(finishEntry.ms, timeOnly);
             if (builtOverride != null) {
               total = finishEntry.ms - builtOverride;
@@ -343,7 +345,7 @@ export function useLeaderboardData(eventId: string) {
         });
       }
     })();
-  }, [hasLoadedOnce, recalcTick, eventId, eventCategories, checkpoints, registrations, recordsByEpc, currentEvent?.cutoffMs, currentEvent?.categoryStartTimes, eventData?.manualStartTime, eventLoading, liveLoading]);
+  }, [hasLoadedOnce, recalcTick, eventId, currentEvent, categoryMap, checkCpCount, penaltyMap, startMap, finishMap, manualStartMap, overrideMap, statusMap, filterCat, selectedGender, filterAgeGroup, (currentEvent as any)?.manualStartTime, eventLoading, liveLoading]);
 
   return { state, overall, byCategory, eventCategories, forceRecalc, hasLoadedOnce };
 }

@@ -14,7 +14,7 @@ type Props = {
     gender: string;
     category: string;
     ageCategory?: string;
-    startTimeRaw: string;
+    startTimeRaw?: string;
     finishTimeRaw: string;
     totalTimeDisplay: string;
     totalTimeMs: number;
@@ -60,7 +60,6 @@ export default function ParticipantModal({ open, onClose, eventId, eventName, da
         gender: data.gender,
         category: data.category,
         ageCategory: data.ageCategory,
-        startTime: data.startTimeRaw,
         finishTime: data.finishTimeRaw,
         totalTimeDisplay: data.totalTimeDisplay,
         pace: data.totalTimeMs ? calculatePace(data.totalTimeMs, data.category) : undefined,

@@ -900,9 +900,9 @@ export default function EventPage() {
             let timeOnly = timeOnlyStr[catKey] ?? null;
 
             // Global T0 priority: manualStartMs > startEntry.ms
-            const manualStartMs = event.manualStartTime ? new Date(event.manualStartTime).getTime() : null;
+            const manualStartMs = (event as any)?.manualStartTime ? new Date((event as any).manualStartTime).getTime() : null;
             const startEntry = startMap.get(p.epc);
-            let fallbackStartMs = manualStartMs || startEntry?.ms;
+            let fallbackStartMs = manualStartMs || startEntry?.ms || null;
 
             // Individual per-BIB Manual Start Priority overrides Global AND Category Start
             const bibManualStartStr = manualStartMap.get(p.epc);
@@ -1423,7 +1423,7 @@ export default function EventPage() {
           {activeTab === "Results" && (
             <div className="space-y-8">
               {!(overall.some((r) => r.rank != null && r.rank <= 3)) && (
-                 <RaceClock cutoffMs={event?.cutoffMs} categoryStartTimes={event?.categoryStartTimes} manualStartTime={event?.manualStartTime} />
+                 <RaceClock cutoffMs={event?.cutoffMs} categoryStartTimes={event?.categoryStartTimes} manualStartTime={(event as any)?.manualStartTime} />
               )}
               <LeaderboardTable
                 title="Overall Result Rankings"
@@ -1671,7 +1671,7 @@ export default function EventPage() {
               {/* Gallery is now in its own tab */}
 
               {!((byCategory as any)[activeTab] || []).some((r: any) => r.rank != null && r.rank <= 3) && (
-                <RaceClock cutoffMs={event?.cutoffMs} categoryStartTimes={event?.categoryStartTimes} manualStartTime={event?.manualStartTime} />
+                <RaceClock cutoffMs={event?.cutoffMs} categoryStartTimes={event?.categoryStartTimes} manualStartTime={(event as any)?.manualStartTime} />
               )}
               <CategorySection
                 categoryKey={activeTab}
