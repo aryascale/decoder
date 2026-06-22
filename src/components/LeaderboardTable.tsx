@@ -476,7 +476,11 @@ export default function LeaderboardTable({
                 <div 
                   key={r.epc} 
                   onClick={() => onSelect?.(r)}
-                  className={`flex flex-col bg-white rounded-2xl border-2 border-stone-200 border-b-[6px] cursor-pointer hover:-translate-y-1 hover:border-stone-300 transition-all min-w-0 ${isTop10 && showTop10Badge ? 'border-yellow-200 bg-yellow-50/50' : ''} ${isSpecial ? 'border-red-200 bg-red-50/50' : ''}`}
+                  className={`flex flex-col rounded-2xl border-2 border-b-[6px] cursor-pointer hover:-translate-y-1 transition-all min-w-0 ${
+                    isSpecial ? 'border-red-200 bg-red-50/80 backdrop-blur-sm' :
+                    (isTop10 && showTop10Badge) ? 'border-white/60 bg-white/70 backdrop-blur-md shadow-lg hover:shadow-xl' :
+                    'border-stone-200 bg-white hover:border-stone-300'
+                  }`}
                 >
                   {/* Top Section */}
                   <div className="flex flex-col sm:flex-row justify-between p-4 lg:p-5 gap-4">
@@ -496,7 +500,7 @@ export default function LeaderboardTable({
                         {/* Pills */}
                         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                           <span className="font-mono font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 sm:px-2 py-0.5 rounded text-[10px] lg:text-xs">
-                            *{r.bib || "-"}
+                            BIB {r.bib || "-"}
                           </span>
                           <span className="font-bold text-stone-600 bg-stone-100 border border-stone-200 px-1.5 sm:px-2 py-0.5 rounded text-[10px] lg:text-xs">
                             {r.gender || "-"}
