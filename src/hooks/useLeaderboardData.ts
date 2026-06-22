@@ -198,31 +198,23 @@ export function useLeaderboardData(eventId: string) {
           }
 
           if (absMs != null && Number.isFinite(absMs)) {
-            const delta = finishEntry.ms - absMs;
-            if (Number.isFinite(delta)) {
-              total = delta;
-              if (total < 0) total += 86400000;
+            const startStr = extractTimeOfDay(new Date(absMs).toISOString());
+            const startNormalized = buildOverrideFromFinishDate(finishEntry.ms, startStr);
+            if (startNormalized != null) {
+              total = finishEntry.ms - startNormalized;
+              if (total < -43200000) total += 86400000; // Only add 24h if it's deeply negative (crosses midnight)
             } else {
-              if (!startMs) return;
-              total = finishEntry.ms - startMs;
-              if (total < 0) total += 86400000;
+              total = finishEntry.ms - absMs;
             }
           } else if (timeOnly) {
             const builtOverride = buildOverrideFromFinishDate(finishEntry.ms, timeOnly);
             if (builtOverride != null) {
-              const delta = finishEntry.ms - builtOverride;
-              if (Number.isFinite(delta)) {
-                total = delta;
-                if (total < 0) total += 86400000;
-              } else {
-                if (!startMs) return;
-                total = finishEntry.ms - startMs;
-                if (total < 0) total += 86400000;
-              }
+              total = finishEntry.ms - builtOverride;
+              if (total < -43200000) total += 86400000;
             } else {
-              if (!startMs) return;
-              total = finishEntry.ms - startMs;
-              if (total < 0) total += 86400000;
+              if (startMs) {
+                total = finishEntry.ms - startMs;
+              }
             }
           } else {
             if (startMs && finishEntry?.ms) {
@@ -230,12 +222,19 @@ export function useLeaderboardData(eventId: string) {
               const startNormalized = buildOverrideFromFinishDate(finishEntry.ms, startStr);
               if (startNormalized != null) {
                 total = finishEntry.ms - startNormalized;
-                if (total < 0) total += 86400000; // Crosses midnight
+                if (total < -43200000) total += 86400000;
               } else {
                 total = finishEntry.ms - startMs;
-                if (total < 0) total += 86400000; // Crosses midnight
               }
             }
+          }
+          
+          // Final safety fallback to prevent massive negative durations from breaking the UI
+          if (total != null && total < 0) {
+             // If we STILL have a negative duration, it means start is genuinely after finish even on the same day.
+             // Usually this implies midnight crossing but we just added 24h above if it was < -12h.
+             // Let's ensure it's positive.
+             while (total < 0) total += 86400000;
           }
 
           let latestCpStr = "-";

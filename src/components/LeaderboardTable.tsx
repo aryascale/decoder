@@ -476,10 +476,11 @@ export default function LeaderboardTable({
                 <div 
                   key={r.epc} 
                   onClick={() => onSelect?.(r)}
-                  className={`flex flex-col rounded-2xl border-2 border-b-[6px] cursor-pointer hover:-translate-y-1 transition-all min-w-0 ${
+                  className={`flex flex-col rounded-2xl border cursor-pointer hover:-translate-y-1 transition-all duration-300 min-w-0 ${
                     isSpecial ? 'border-red-200 bg-red-50/80 backdrop-blur-sm' :
-                    (isTop10 && showTop10Badge) ? 'border-white/60 bg-white/70 backdrop-blur-md shadow-lg hover:shadow-xl' :
-                    'border-stone-200 bg-white hover:border-stone-300'
+                    (isTop10 && showTop10Badge) ? 'border-white/50 bg-white/40 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]' :
+                    (isTop10 && showTop10Badge) ? 'border-white/50 bg-white/60 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.06)]' :
+                    'border-slate-200/60 bg-white/80 backdrop-blur-md hover:border-slate-300 hover:shadow-lg'
                   }`}
                 >
                   {/* Top Section */}
@@ -493,19 +494,19 @@ export default function LeaderboardTable({
                       
                       {/* Athlete Info */}
                       <div className="flex flex-col gap-1.5 min-w-0">
-                        <div className="font-extrabold text-stone-900 tracking-tight text-base sm:text-lg lg:text-xl truncate max-w-full">
+                        <div className="font-extrabold text-slate-900 tracking-tight text-base sm:text-lg lg:text-xl truncate max-w-full">
                           {r.name || "-"}
                         </div>
                         
                         {/* Pills */}
                         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                          <span className="font-mono font-bold text-red-600 bg-red-50 border border-red-200 px-1.5 sm:px-2 py-0.5 rounded text-[10px] lg:text-xs">
+                          <span className="font-mono font-semibold text-rose-600 bg-rose-50 border border-rose-100 px-2 py-0.5 rounded-md text-[10px] lg:text-xs tracking-wide shadow-sm">
                             BIB {r.bib || "-"}
                           </span>
-                          <span className="font-bold text-stone-600 bg-stone-100 border border-stone-200 px-1.5 sm:px-2 py-0.5 rounded text-[10px] lg:text-xs">
+                          <span className="font-semibold text-slate-600 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md text-[10px] lg:text-xs shadow-sm">
                             {r.gender || "-"}
                           </span>
-                          <span className="font-bold text-stone-600 bg-stone-100 border border-stone-200 px-1.5 sm:px-2 py-0.5 rounded text-[10px] lg:text-xs">
+                          <span className="font-semibold text-slate-600 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-md text-[10px] lg:text-xs shadow-sm">
                             {r.category || "-"}
                           </span>
                           {r.ageCategory && (
@@ -532,18 +533,18 @@ export default function LeaderboardTable({
                   </div>
 
                   {/* Bottom Bar: Timestamps */}
-                  <div className="flex flex-wrap md:flex-nowrap items-center bg-stone-50 border-t-2 border-stone-100 rounded-b-xl overflow-hidden divide-y md:divide-y-0 md:divide-x-2 divide-stone-100">
+                  <div className="flex flex-wrap md:flex-nowrap items-center bg-slate-50/50 backdrop-blur-sm border-t border-slate-100 rounded-b-2xl overflow-hidden divide-y md:divide-y-0 md:divide-x divide-slate-100">
                     <div className="flex-1 px-4 py-2 sm:px-5 sm:py-3">
-                      <div className="text-[9px] uppercase font-black text-stone-400 tracking-widest mb-0.5">Start</div>
-                      <div className="font-mono text-[10px] sm:text-xs font-bold text-emerald-600">{r.startTimeRaw || "-"}</div>
+                      <div className="text-[9px] uppercase font-bold text-slate-400 tracking-widest mb-0.5">Start</div>
+                      <div className="font-mono text-[10px] sm:text-xs font-semibold text-emerald-500">{r.startTimeRaw || "-"}</div>
                     </div>
                     <div className="flex-1 px-4 py-2 sm:px-5 sm:py-3">
-                      <div className="text-[9px] uppercase font-black text-stone-400 tracking-widest mb-0.5">Finish</div>
-                      <div className="font-mono text-[10px] sm:text-xs font-bold text-red-600">{r.finishTimeRaw || "-"}</div>
+                      <div className="text-[9px] uppercase font-bold text-slate-400 tracking-widest mb-0.5">Finish</div>
+                      <div className="font-mono text-[10px] sm:text-xs font-semibold text-rose-500">{r.finishTimeRaw || "-"}</div>
                     </div>
                     <div className="flex-1 px-4 py-2 sm:px-5 sm:py-3">
-                      <div className="text-[9px] uppercase font-black text-stone-400 tracking-widest mb-0.5">Total</div>
-                      <div className="font-mono text-[10px] sm:text-xs font-bold text-stone-900">
+                      <div className="text-[9px] uppercase font-bold text-slate-400 tracking-widest mb-0.5">Total</div>
+                      <div className="font-mono text-[10px] sm:text-xs font-semibold text-slate-800">
                         {r.totalTimeDisplay === "INVALID" ? "Start time tidak valid" : r.totalTimeDisplay}
                       </div>
                     </div>
