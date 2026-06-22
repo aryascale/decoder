@@ -80,8 +80,8 @@ export default function LeaderboardTable({
   }, [rows]);
 
   const gridTemplateColumnsInner = useMemo(() => {
-    const lapCols = Array(maxLapsCount).fill('120px').join(' ');
-    return `40px 60px minmax(180px, 1fr) 90px 90px 90px 160px ${lapCols ? lapCols + ' ' : ''}`;
+    const lapCols = Array(maxLapsCount).fill('100px').join(' ');
+    return `36px 56px minmax(140px, 1fr) 80px 80px 80px 130px ${lapCols ? lapCols + ' ' : ''}`;
   }, [maxLapsCount]);
 
   const rankedRows = useMemo(() => {
@@ -558,7 +558,7 @@ export default function LeaderboardTable({
                   return <div key={i} className="text-center uppercase" title={label}>{label}</div>;
                 })}
               </div>
-              <div className="w-[120px] flex-shrink-0 text-right pr-6">Race Time</div>
+              <div className="w-[140px] flex-shrink-0 text-right pr-4">Race Time</div>
             </div>
 
             {/* Rows */}
@@ -610,8 +610,8 @@ export default function LeaderboardTable({
                   </div>
                   
                   {/* Race Time Pill */}
-                  <div className="w-[120px] flex-shrink-0 text-right pr-2 lg:pr-6">
-                    <span className={`font-mono font-black text-sm lg:text-lg tracking-tighter bg-stone-100 border-2 border-stone-200 border-b-[4px] px-3 py-1.5 rounded-xl inline-block w-full text-center ${isSpecial ? "text-orange-600" : r.totalTimeDisplay === "ACTIVE" ? "text-emerald-600 border-emerald-200 bg-emerald-50" : "text-stone-900"}`}>
+                  <div className="w-[140px] flex-shrink-0 text-right pr-2 lg:pr-4">
+                    <span className={`font-mono font-black tracking-tighter bg-stone-100 border-2 border-stone-200 border-b-[4px] px-2 py-1.5 rounded-xl inline-block w-full text-center overflow-hidden text-ellipsis whitespace-nowrap ${r.totalTimeDisplay.length > 9 ? 'text-xs' : 'text-sm lg:text-lg'} ${isSpecial ? "text-orange-600" : r.totalTimeDisplay === "ACTIVE" ? "text-emerald-600 border-emerald-200 bg-emerald-50" : "text-stone-900"}`}>
                       {r.totalTimeDisplay}
                     </span>
                   </div>
