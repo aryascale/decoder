@@ -206,8 +206,11 @@ export function useLeaderboardData(eventId: string) {
 
           let total: number | null = null;
           const manualStartMs = (currentEvent as any)?.manualStartTime ? new Date((currentEvent as any).manualStartTime).getTime() : null;
-          let startMs = manualStartMs || startMap.get(p.epc)?.ms;
+          const startEntry = startMap.get(p.epc);
+          let startMs = manualStartMs || startEntry?.ms;
           
+          let rawStartStrForDisplay = startEntry?.raw;
+
           const bibManualStartStr = manualStartMap.get(p.epc);
           if (bibManualStartStr && finishEntry?.ms) {
             const builtOverride = buildOverrideFromFinishDate(finishEntry.ms, bibManualStartStr);
@@ -215,6 +218,7 @@ export function useLeaderboardData(eventId: string) {
               startMs = builtOverride;
               absMs = null;
               timeOnly = null;
+              rawStartStrForDisplay = bibManualStartStr;
             }
           }
 
@@ -318,7 +322,7 @@ export function useLeaderboardData(eventId: string) {
             category: p.category || p.sourceCategoryKey,
             sourceCategoryKey: p.sourceCategoryKey,
             ageCategory: p.ageCategory,
-            startTimeRaw: startMs ? extractTimeOfDay(new Date(startMs).toISOString()) : "-",
+            startTimeRaw: rawStartStrForDisplay ? extractTimeOfDay(rawStartStrForDisplay) : startMs ? extractTimeOfDay(new Date(startMs).toISOString()) : "-",
             finishTimeRaw: extractTimeOfDay(finishEntry?.raw || ""),
             totalTimeMs: total!,
             totalTimeDisplay: isDQ ? "DSQ" : isDNF ? "DNF" : isLiveActive ? "ACTIVE" : formatDuration(total!),

@@ -893,7 +893,7 @@ export default function EventPage() {
               }
             }
 
-            const pushIncompleteRow = (statusText: string, computedStartMs?: number | null) => {
+            const pushIncompleteRow = (statusText: string, computedStartMs?: number | null, rawStart?: string | null) => {
               baseRows.push({
                 rank: null,
                 bib: p.bib,
@@ -902,7 +902,7 @@ export default function EventPage() {
                 category: p.category || resolvedCategoryKey,
                 sourceCategoryKey: resolvedCategoryKey,
                 ageCategory: p.ageCategory,
-                startTimeRaw: computedStartMs ? extractTimeOfDay(new Date(computedStartMs).toISOString()) : "-",
+                startTimeRaw: rawStart ? extractTimeOfDay(rawStart) : computedStartMs ? extractTimeOfDay(new Date(computedStartMs).toISOString()) : "-",
                 finishTimeRaw: extractTimeOfDay(finishEntry?.raw || "-"),
                 totalTimeMs: 0,
                 totalTimeDisplay: isDQ ? "DSQ" : statusText,
@@ -926,12 +926,15 @@ export default function EventPage() {
 
             // Individual per-BIB Manual Start Priority overrides Global AND Category Start
             const bibManualStartStr = manualStartMap.get(p.epc);
+            let rawStartStr = startEntry?.raw;
+
             if (bibManualStartStr) {
               const builtOverride = buildOverrideFromFinishDate(finishEntry.ms, bibManualStartStr);
               if (builtOverride != null) {
                 fallbackStartMs = builtOverride;
                 absMs = null;
                 timeOnly = null;
+                rawStartStr = bibManualStartStr;
               }
             }
 
@@ -961,7 +964,7 @@ export default function EventPage() {
             }
 
             if (!Number.isFinite(total) || total == null) {
-              pushIncompleteRow("NO START TIME", fallbackStartMs);
+              pushIncompleteRow("NO START TIME", fallbackStartMs, rawStartStr);
               return;
             }
 
@@ -1004,7 +1007,7 @@ export default function EventPage() {
               category: p.category || resolvedCategoryKey,
               sourceCategoryKey: resolvedCategoryKey,
               ageCategory: p.ageCategory,
-              startTimeRaw: t0Ms ? extractTimeOfDay(new Date(t0Ms).toISOString()) : "-",
+              startTimeRaw: rawStartStr ? extractTimeOfDay(rawStartStr) : t0Ms ? extractTimeOfDay(new Date(t0Ms).toISOString()) : "-",
               finishTimeRaw: extractTimeOfDay(finishEntry.raw),
               totalTimeMs: total,
               totalTimeDisplay: isDQ ? "DSQ" : isDNF ? "DNF" : formatDuration(total),
