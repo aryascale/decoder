@@ -69,7 +69,7 @@ export function useLeaderboardData(eventId: string) {
 
         const startMap = await loadTimesMap("start", eventId);
         const finishMap = await loadTimesMap("finish", eventId);
-        const cpMap = await loadCheckpointTimesMap(eventId);
+        await loadCheckpointTimesMap(eventId);
 
         // Use timing from event (per-event database) instead of localStorage
         const cutoffMs = currentEvent?.cutoffMs ?? null;
@@ -219,77 +219,136 @@ export function useLeaderboardData(eventId: string) {
           let timeOnly = timeOnlyStr[catKey] ?? null;
 
           let total: number | null = null;
+          let lapsDisplay: { label: string, timeDisplay: string, isDuration?: boolean }[] = [];
           const manualStartMs = (currentEvent as any)?.manualStartTime ? new Date((currentEvent as any).manualStartTime).getTime() : null;
           const startEntry = startMap.get(p.epc);
           let startMs = manualStartMs || startEntry?.ms;
           
           let rawStartStrForDisplay = startEntry?.raw;
 
-          // Fallback to Live Record for START checkpoint
-          if (!startMs && epsRecords && epsRecords.length > 0) {
-             const startRecord = epsRecords.find(r => 
-                r.checkpointName.toLowerCase().includes('start') || 
-                r.identitas.toLowerCase().includes('start') || 
-                r.order === 0 || 
-                (checkpoints.find(cp => cp.identitas === r.identitas)?.name.toLowerCase().includes('start'))
-             );
-             if (startRecord) {
-                startMs = new Date(startRecord.time).getTime();
-                rawStartStrForDisplay = new Date(startRecord.time).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any);
+          if ((currentEvent as any)?.isLoopMode) {
+             const minLapMs = (currentEvent as any).minLapTimeMs || 300000;
+             const maxLaps = (currentEvent?.content as any)?.maxLaps ? parseInt((currentEvent?.content as any).maxLaps) : null;
+             let baseStartTime = startMs;
+             const validLaps: any[] = [];
+             
+             if (epsRecords && epsRecords.length > 0) {
+               const sortedRecords = [...epsRecords].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+               
+               if (!baseStartTime) {
+                 baseStartTime = new Date(sortedRecords[0].time).getTime();
+                 startMs = baseStartTime;
+                 rawStartStrForDisplay = new Date(baseStartTime).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any);
+               }
+               
+               const lastTimeByCp: Record<string, number> = {};
+               lastTimeByCp[sortedRecords[0].checkpointName] = baseStartTime;
+               
+               let lapCounter = 1;
+               
+               for (let i = 1; i < sortedRecords.length; i++) {
+                 const rec = sortedRecords[i];
+                 const cpName = rec.checkpointName;
+                 const t = new Date(rec.time).getTime();
+                 
+                 const lastTimeForThisCp = lastTimeByCp[cpName] || 0;
+                 
+                 if (t - lastTimeForThisCp >= minLapMs) {
+                   if (maxLaps != null && lapCounter > maxLaps) {
+                     break;
+                   }
+                   
+                   validLaps.push({ time: t, name: cpName, lapIndex: lapCounter });
+                   lastTimeByCp[cpName] = t;
+                   
+                   const cpLower = cpName.toLowerCase();
+                   if (cpLower.includes('finish') || cpLower.includes('end')) {
+                     lapCounter++;
+                   }
+                 }
+               }
+               
+               if (validLaps.length > 0) {
+                 const lastCrossing = validLaps[validLaps.length - 1].time;
+                 total = lastCrossing - baseStartTime;
+                 finishEntry = { ms: lastCrossing, raw: new Date(lastCrossing).toLocaleTimeString('en-US', { hour12: false }) };
+                 
+                 validLaps.forEach((lap) => {
+                   const duration = lap.time - baseStartTime!;
+                   lapsDisplay.push({
+                     label: `L${lap.lapIndex} - ${lap.name}`,
+                     timeDisplay: formatDuration(duration),
+                     isDuration: true
+                   });
+                 });
+               } else {
+                 total = null; // Active, no laps yet
+               }
              }
-          }
-
-          const bibManualStartStr = manualStartMap.get(p.epc);
-          if (bibManualStartStr && finishEntry?.ms) {
-            const builtOverride = buildOverrideFromFinishDate(finishEntry.ms, bibManualStartStr);
-            if (builtOverride != null) {
-              startMs = builtOverride;
-              absMs = null;
-              timeOnly = null;
-              rawStartStrForDisplay = bibManualStartStr;
+          } else {
+            // Fallback to Live Record for START checkpoint
+            if (!startMs && epsRecords && epsRecords.length > 0) {
+               const startRecord = epsRecords.find(r => 
+                  r.checkpointName.toLowerCase().includes('start') || 
+                  r.identitas.toLowerCase().includes('start') || 
+                  r.order === 0 || 
+                  (checkpoints.find(cp => cp.identitas === r.identitas)?.name.toLowerCase().includes('start'))
+               );
+               if (startRecord) {
+                  startMs = new Date(startRecord.time).getTime();
+                  rawStartStrForDisplay = new Date(startRecord.time).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any);
+               }
             }
-          }
 
-          if (absMs != null && Number.isFinite(absMs)) {
-            if (!finishEntry?.ms) return;
-            const startStr = new Date(absMs).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any);
-            const startNormalized = buildOverrideFromFinishDate(finishEntry.ms, startStr);
-            if (startNormalized != null) {
-              total = finishEntry.ms - startNormalized;
-              if (total < -43200000) total += 86400000; // Only add 24h if it's deeply negative (crosses midnight)
-            } else {
-              total = finishEntry.ms - absMs;
-            }
-          } else if (timeOnly) {
-            if (!finishEntry?.ms) return;
-            const builtOverride = buildOverrideFromFinishDate(finishEntry.ms, timeOnly);
-            if (builtOverride != null) {
-              total = finishEntry.ms - builtOverride;
-              if (total < -43200000) total += 86400000;
-            } else {
-              if (startMs) {
-                total = finishEntry.ms - startMs;
+            const bibManualStartStr = manualStartMap.get(p.epc);
+            if (bibManualStartStr && finishEntry?.ms) {
+              const builtOverride = buildOverrideFromFinishDate(finishEntry.ms, bibManualStartStr);
+              if (builtOverride != null) {
+                startMs = builtOverride;
+                absMs = null;
+                timeOnly = null;
+                rawStartStrForDisplay = bibManualStartStr;
               }
             }
-          } else {
-            if (startMs && finishEntry?.ms) {
-              const startStr = new Date(startMs).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any);
+
+            if (absMs != null && Number.isFinite(absMs)) {
+              if (!finishEntry?.ms) return;
+              const startStr = new Date(absMs).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any);
               const startNormalized = buildOverrideFromFinishDate(finishEntry.ms, startStr);
               if (startNormalized != null) {
                 total = finishEntry.ms - startNormalized;
+                if (total < -43200000) total += 86400000; // Only add 24h if it's deeply negative (crosses midnight)
+              } else {
+                total = finishEntry.ms - absMs;
+              }
+            } else if (timeOnly) {
+              if (!finishEntry?.ms) return;
+              const builtOverride = buildOverrideFromFinishDate(finishEntry.ms, timeOnly);
+              if (builtOverride != null) {
+                total = finishEntry.ms - builtOverride;
                 if (total < -43200000) total += 86400000;
               } else {
-                total = finishEntry.ms - startMs;
+                if (startMs) {
+                  total = finishEntry.ms - startMs;
+                }
+              }
+            } else {
+              if (startMs && finishEntry?.ms) {
+                const startStr = new Date(startMs).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any);
+                const startNormalized = buildOverrideFromFinishDate(finishEntry.ms, startStr);
+                if (startNormalized != null) {
+                  total = finishEntry.ms - startNormalized;
+                  if (total < -43200000) total += 86400000;
+                } else {
+                  total = finishEntry.ms - startMs;
+                }
               }
             }
-          }
-          
-          // Final safety fallback to prevent massive negative durations from breaking the UI
-          if (total != null && total < 0) {
-             // If we STILL have a negative duration, it means start is genuinely after finish even on the same day.
-             // Usually this implies midnight crossing but we just added 24h above if it was < -12h.
-             // Let's ensure it's positive.
-             while (total < 0) total += 86400000;
+            
+            // Final safety fallback to prevent massive negative durations from breaking the UI
+            if (total != null && total < 0) {
+               while (total < 0) total += 86400000;
+            }
           }
 
           let latestCpStr = "-";
@@ -306,7 +365,7 @@ export function useLeaderboardData(eventId: string) {
           }
 
           let isLiveActive = false;
-          if (!Number.isFinite(total) || total == null) {
+          if (!Number.isFinite(total) || total == null || total === 0) {
             isLiveActive = true;
             total = 0;
           }
@@ -351,12 +410,12 @@ export function useLeaderboardData(eventId: string) {
             ageCategory: p.ageCategory,
             startTimeRaw: rawStartStrForDisplay ? extractTimeOfDay(rawStartStrForDisplay) : startMs ? new Date(startMs).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any) : "-",
             finishTimeRaw: extractTimeOfDay(finishEntry?.raw || ""),
-            totalTimeMs: total!,
-            totalTimeDisplay: isDQ ? "DSQ" : isDNF ? "DNF" : isLiveActive ? "ACTIVE" : formatDuration(total!),
+            totalTimeMs: total ?? 0,
+            totalTimeDisplay: isDQ ? 'DSQ' : (isDNF ? "DNF" : (isLiveActive ? "ACTIVE" : formatDuration(total!))),
             penaltyMs: penMs,
             epc: p.epc,
             latestCp: latestCpStr,
-            laps: matchedLaps
+            laps: (currentEvent as any)?.isLoopMode ? lapsDisplay : matchedLaps
           });
         });
 
@@ -378,7 +437,11 @@ export function useLeaderboardData(eventId: string) {
 
         const catMap: Record<string, LeaderRow[]> = {};
         eventCategories.forEach((catKey: string) => {
-          const list = overallFinal.filter((r) => r.sourceCategoryKey === catKey);
+          const aggC = catKey.toLowerCase().replace(/[^a-z0-9]/g, '').replace(/km/g, 'k');
+          const list = overallFinal.filter((r) => {
+            const aggR = (r.sourceCategoryKey || '').toLowerCase().replace(/[^a-z0-9]/g, '').replace(/km/g, 'k');
+            return aggR === aggC || (r.sourceCategoryKey || '').toLowerCase().trim() === catKey.toLowerCase().trim();
+          });
           catMap[catKey] = list;
         });
 

@@ -888,6 +888,99 @@ export default function EventPage() {
             const manualFinishStr = manualFinishMap.get(p.epc);
             const epsRecords = recordsByEpc[p.epc];
 
+            // ================= LOOP MODE LOGIC =================
+            // Only apply automatic Loop Mode logic if there's no manual CSV finish override
+            if ((event as any)?.isLoopMode && !manualFinishStr && epsRecords && epsRecords.length > 0) {
+              const minLapMs = (event as any).minLapTimeMs || 300000;
+              const maxLaps = (event as any).content?.maxLaps ? parseInt((event as any).content.maxLaps) : null;
+              
+              const startEntry = startMap.get(p.epc);
+              let baseStartTime = (event as any)?.manualStartTime ? new Date((event as any).manualStartTime).getTime() : startEntry?.ms || null;
+              let rawStartStrForDisplay = startEntry?.raw || null;
+              
+              const validLaps: any[] = [];
+              let total: number | null = null;
+              let finishEntryLocal: any = null;
+              
+              if (epsRecords && epsRecords.length > 0) {
+                 const sortedRecords = [...epsRecords].sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+                 if (!baseStartTime) {
+                   baseStartTime = new Date(sortedRecords[0].time).getTime();
+                   rawStartStrForDisplay = new Date(baseStartTime).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any);
+                 }
+                 
+                 const lastTimeByCp: Record<string, number> = {};
+                 lastTimeByCp[sortedRecords[0].checkpointName] = baseStartTime;
+                 
+                 let lapCounter = 1;
+                 
+                 for (let i = 1; i < sortedRecords.length; i++) {
+                   const rec = sortedRecords[i];
+                   const cpName = rec.checkpointName;
+                   const t = new Date(rec.time).getTime();
+                   
+                   const lastTimeForThisCp = lastTimeByCp[cpName] || 0;
+                   
+                   if (t - lastTimeForThisCp >= minLapMs) {
+                     if (maxLaps != null && lapCounter > maxLaps) {
+                       break;
+                     }
+                     
+                     validLaps.push({ time: t, name: cpName, lapIndex: lapCounter });
+                     lastTimeByCp[cpName] = t;
+                     
+                     const cpLower = cpName.toLowerCase();
+                     if (cpLower.includes('finish') || cpLower.includes('end')) {
+                       lapCounter++;
+                     }
+                   }
+                 }
+                 
+                 if (validLaps.length > 0) {
+                   const lastCrossing = validLaps[validLaps.length - 1].time;
+                   total = lastCrossing - baseStartTime;
+                   finishEntryLocal = { ms: lastCrossing, raw: new Date(lastCrossing).toLocaleTimeString('en-US', { hour12: false }) };
+                 }
+              }
+              
+              if (total != null && total > 0) {
+                // We have a valid Loop Mode calculation, execute early return
+                const penMs = penaltyMap.get(p.epc) || 0;
+                total += penMs;
+                
+                const isDNF = cutoffMs != null && total > cutoffMs;
+                
+                const lapsDisplay = validLaps.map((lap) => {
+                   const duration = lap.time - baseStartTime!;
+                   return {
+                     label: `L${lap.lapIndex} - ${lap.name}`,
+                     timeDisplay: formatDuration(duration),
+                     isDuration: true
+                   };
+                });
+
+                baseRows.push({
+                  rank: null,
+                  bib: p.bib,
+                  name: p.name,
+                  gender: p.gender,
+                  category: p.category || resolvedCategoryKey,
+                  sourceCategoryKey: resolvedCategoryKey,
+                  ageCategory: p.ageCategory,
+                  startTimeRaw: rawStartStrForDisplay ? extractTimeOfDay(rawStartStrForDisplay) : baseStartTime ? new Date(baseStartTime).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 3 } as any) : "-",
+                  finishTimeRaw: extractTimeOfDay(finishEntryLocal?.raw || ""),
+                  totalTimeMs: total,
+                  totalTimeDisplay: isDQ ? "DSQ" : isDNF ? "DNF" : formatDuration(total),
+                  penaltyMs: penMs,
+                  epc: p.epc,
+                  laps: lapsDisplay,
+                });
+                
+                return;
+              }
+            }
+            // ================= END LOOP MODE LOGIC =================
+
             if (manualFinishStr) {
               const mfMs = buildOverrideFromFinishDate(Date.now(), manualFinishStr);
               if (mfMs) {
@@ -1004,30 +1097,35 @@ export default function EventPage() {
 
             const isDNF = cutoffMs != null && total > cutoffMs;
 
-            // Resolve checkpoints to Laps
-            const rawCheckpoints = checkpointMap.get(p.epc) || [];
-            // Calculate T0 for laps: depends on whether category override was used
             let t0Ms: number | null = null;
             if (absMs != null && Number.isFinite(absMs)) {
               t0Ms = absMs;
-            } else if (timeOnly) {
-              // Time only requires knowing the finish time to build override, but for laps we might just use the lap time itself
-              // For simplicity, we just use fallbackStartMs if available for timeOnly, since lap time building is complex
-              t0Ms = fallbackStartMs || null;
             } else {
               t0Ms = fallbackStartMs || null;
             }
 
-            const laps = rawCheckpoints.map((rawStr, i) => {
-              const parsed = parseTimeToMs(rawStr);
-              if (!parsed.ms || !t0Ms) return null;
-              const lapTotal = parsed.ms - t0Ms;
-              if (lapTotal < 0) return null;
-              return {
-                label: `Lap ${i + 1}`,
-                timeDisplay: formatDuration(lapTotal),
-              };
-            }).filter(Boolean) as { label: string, timeDisplay: string }[];
+            const matchedLaps = checkpoints.map((cpDef: any) => {
+               const cpId = cpDef.identitas || cpDef.id;
+               const label = cpDef.name || cpDef.identitas || cpDef.id;
+               
+               // Find if this EPC has a record for this checkpoint
+               const recordForCp = epsRecords?.find((rec: any) => rec.identitas === cpId);
+               
+               if (!recordForCp) return { label, timeDisplay: "-", isDuration: false };
+               
+               const cpTime = new Date(recordForCp.time);
+               
+               // If we have a start time, show relative duration, otherwise show time of day
+               if (t0Ms) {
+                  const diffMs = cpTime.getTime() - t0Ms;
+                  if (diffMs > 0) {
+                     return { label, timeDisplay: formatDuration(diffMs), isDuration: true };
+                  }
+               }
+               
+               const cpTimeStr = cpTime.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+               return { label, timeDisplay: cpTimeStr, isDuration: false };
+            });
 
             baseRows.push({
               rank: null,
@@ -1043,7 +1141,7 @@ export default function EventPage() {
               totalTimeDisplay: isDQ ? "DSQ" : isDNF ? "DNF" : formatDuration(total),
               penaltyMs: penMs,
               epc: p.epc,
-              laps,
+              laps: matchedLaps,
             });
           });
         }

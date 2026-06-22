@@ -99,7 +99,12 @@ export default function LeaderboardTable({
     const actives = currentRows.filter((r) => r.totalTimeDisplay === "ACTIVE");
 
     const rankedFinishers = [...finishers]
-      .sort((a, b) => a.totalTimeMs - b.totalTimeMs)
+      .sort((a, b) => {
+        const aLaps = a.laps?.length || 0;
+        const bLaps = b.laps?.length || 0;
+        if (aLaps !== bLaps) return bLaps - aLaps;
+        return a.totalTimeMs - b.totalTimeMs;
+      })
       .map((r, i) => ({ ...r, rank: i + 1 }));
 
     const rankedDnfs = dnfs.map((r, i) => ({
@@ -129,7 +134,12 @@ export default function LeaderboardTable({
 
     const buildTop3 = (list: LeaderRow[]) => {
       const finishers = list.filter(r => r.totalTimeDisplay !== 'DNF' && r.totalTimeDisplay !== 'DSQ' && r.totalTimeDisplay !== 'ACTIVE');
-      const sorted = [...finishers].sort((a, b) => a.totalTimeMs - b.totalTimeMs).slice(0, 3);
+      const sorted = [...finishers].sort((a, b) => {
+        const aLaps = a.laps?.length || 0;
+        const bLaps = b.laps?.length || 0;
+        if (aLaps !== bLaps) return bLaps - aLaps;
+        return a.totalTimeMs - b.totalTimeMs;
+      }).slice(0, 3);
       return sorted.map((r, i) => ({ ...r, rank: i + 1 }));
     };
 

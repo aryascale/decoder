@@ -79,9 +79,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
   const [newCategoryPrice, setNewCategoryPrice] = useState('');
   const [newCategoryQuota, setNewCategoryQuota] = useState('');
 
-  // Event settings state
-  const [tshirtSizes, setTshirtSizes] = useState('');
-  const [bibCustomPrice, setBibCustomPrice] = useState('');
+
 
   // Homepage content state
   const [homeContent, setHomeContent] = useState<{ about: string; schedule: string; rules: string }>({ about: '', schedule: '', rules: '' });
@@ -198,8 +196,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
         const eventData = await eventRes.json();
         setEventData(eventData);
         setCurrentGpxPath(eventData.gpxFile || null);
-        setTshirtSizes(eventData.tshirtSizes || '');
-        setBibCustomPrice(String(eventData.bibCustomPrice || ''));
+
 
         // Load timing data
         if (eventData.cutoffMs != null) {
@@ -816,23 +813,6 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
       alert('Failed to save categories');
     } finally {
       setSavingCategories(false);
-    }
-  };
-
-  const saveEventSettings = async () => {
-    try {
-      const res = await fetch(`/api/events?eventId=${eventId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tshirtSizes: tshirtSizes || null, bibCustomPrice: parseInt(bibCustomPrice) || 0 }),
-      });
-      if (res.ok) {
-        alert('Event settings saved!');
-      } else {
-        alert('Failed to save event settings');
-      }
-    } catch {
-      alert('Failed to save event settings');
     }
   };
 
@@ -2854,6 +2834,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
                           about: homeContent.about || eventData.content?.about || '',
                           schedule: homeContent.schedule || eventData.content?.schedule || '',
                           rules: homeContent.rules || eventData.content?.rules || '',
+                          maxLaps: eventData.content?.maxLaps || null,
                           allowBulkNoOtp: eventData.content?.allowBulkNoOtp || false,
                           enableRegisteredScan: eventData.content?.enableRegisteredScan !== false,
                           rpcBgUrl: eventData.content?.rpcBgUrl || '',
@@ -2981,6 +2962,29 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
                     />
                     <div className="text-xs text-gray-500 mt-2">
                       Guna mencegah duplikasi (Debounce). Jika pelari membaca tag dua kali dalam rentang waktu ini, data kedua akan diabaikan dan <strong>waktu pertama menginjak karpet</strong> akan dipertahankan.
+                    </div>
+                    
+                    <div className="mt-4 border-t border-stone-200 pt-4">
+                      <label className="block text-sm font-bold text-gray-700 mb-1">Maksimal Laps (Opsional)</label>
+                      <input
+                        type="number"
+                        className="search w-full sm:w-1/3"
+                        placeholder="Biarkan kosong jika tidak terbatas"
+                        value={eventData?.content?.maxLaps || ''}
+                        onChange={(e) => {
+                          const val = e.target.value ? parseInt(e.target.value) : null;
+                          setEventData({
+                            ...eventData,
+                            content: {
+                              ...(eventData?.content || {}),
+                              maxLaps: val
+                            }
+                          });
+                        }}
+                      />
+                      <div className="text-xs text-gray-500 mt-2">
+                        Jika diatur, pelari yang sudah mencapai batas lap ini tidak akan dihitung lagi waktu lintasannya (sudah dianggap Finish).
+                      </div>
                     </div>
                   </div>
                 )}
