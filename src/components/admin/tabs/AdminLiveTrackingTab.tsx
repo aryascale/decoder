@@ -103,6 +103,7 @@ export default function AdminLiveTrackingTab({ eventId }: AdminLiveTrackingTabPr
             totalTimeDisplay: selected.totalTimeDisplay,
             checkpointTimes: selected.laps?.map(l => l.timeDisplay) || [],
             penaltyMs: selected.penaltyMs || 0,
+            totalTimeMs: selected.totalTimeMs,
             overallRank: selected.rank,
             genderRank: null,
             categoryRank: null,

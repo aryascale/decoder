@@ -1146,6 +1146,7 @@ export default function EventPage() {
       totalTimeDisplay: selected.totalTimeDisplay,
       checkpointTimes: checkpointMap.get(selected.epc) || [],
       penaltyMs: selected.penaltyMs || 0,
+      totalTimeMs: selected.totalTimeMs,
       overallRank,
       genderRank,
       categoryRank,

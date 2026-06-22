@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { renderCertificatePNG, downloadDataUrl } from "../lib/certificate";
+import { calculatePace } from "../lib/time";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Props = {
@@ -16,6 +17,7 @@ type Props = {
     startTimeRaw: string;
     finishTimeRaw: string;
     totalTimeDisplay: string;
+    totalTimeMs: number;
     checkpointTimes: string[];
     penaltyMs?: number;
     overallRank: number | null;
@@ -61,6 +63,7 @@ export default function ParticipantModal({ open, onClose, eventId, eventName, da
         startTime: data.startTimeRaw,
         finishTime: data.finishTimeRaw,
         totalTimeDisplay: data.totalTimeDisplay,
+        pace: data.totalTimeMs ? calculatePace(data.totalTimeMs, data.category) : undefined,
         overallRank: data.overallRank,
         genderRank: data.genderRank,
         categoryRank: data.categoryRank,
@@ -154,6 +157,13 @@ export default function ParticipantModal({ open, onClose, eventId, eventName, da
                 <div className="label">Total Time</div>
                 <div className="value mono strong">
                   {data.totalTimeDisplay || "-"}
+                </div>
+              </div>
+
+              <div className="modal-item">
+                <div className="label">Avg Pace</div>
+                <div className="value mono strong text-yellow-600">
+                  {data.totalTimeMs ? calculatePace(data.totalTimeMs, data.category) : "--:--"} /km
                 </div>
               </div>
 

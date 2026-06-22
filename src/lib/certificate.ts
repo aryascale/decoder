@@ -8,6 +8,7 @@ export type CertData = {
     ageCategory?: string;
     finishTime: string;
     totalTimeDisplay: string;
+    pace?: string;
     overallRank?: number | null;
     genderRank?: number | null;
     categoryRank?: number | null;
@@ -186,6 +187,7 @@ export type CertData = {
       ["Age Category", data.ageCategory?.trim() || "-"],
       ["Finish Time", data.finishTime || "-"],
       ["Total Time", data.totalTimeDisplay || "-"],
+      ["Avg Pace", data.pace ? `${data.pace} /km` : "-"],
     ];
 
     const rankRows: Array<[string, string]> = [

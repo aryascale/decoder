@@ -201,9 +201,11 @@ export function useLeaderboardData(eventId: string) {
             const delta = finishEntry.ms - absMs;
             if (Number.isFinite(delta)) {
               total = delta;
+              if (total < 0) total += 86400000;
             } else {
               if (!startMs) return;
               total = finishEntry.ms - startMs;
+              if (total < 0) total += 86400000;
             }
           } else if (timeOnly) {
             const builtOverride = buildOverrideFromFinishDate(finishEntry.ms, timeOnly);
@@ -211,17 +213,28 @@ export function useLeaderboardData(eventId: string) {
               const delta = finishEntry.ms - builtOverride;
               if (Number.isFinite(delta)) {
                 total = delta;
+                if (total < 0) total += 86400000;
               } else {
                 if (!startMs) return;
                 total = finishEntry.ms - startMs;
+                if (total < 0) total += 86400000;
               }
             } else {
               if (!startMs) return;
               total = finishEntry.ms - startMs;
+              if (total < 0) total += 86400000;
             }
           } else {
             if (startMs && finishEntry?.ms) {
-              total = finishEntry.ms - startMs;
+              const startStr = extractTimeOfDay(new Date(startMs).toISOString());
+              const startNormalized = buildOverrideFromFinishDate(finishEntry.ms, startStr);
+              if (startNormalized != null) {
+                total = finishEntry.ms - startNormalized;
+                if (total < 0) total += 86400000; // Crosses midnight
+              } else {
+                total = finishEntry.ms - startMs;
+                if (total < 0) total += 86400000; // Crosses midnight
+              }
             }
           }
 

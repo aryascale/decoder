@@ -101,6 +101,7 @@ export default function LeaderboardPage() {
       totalTimeDisplay: selected.totalTimeDisplay,
       checkpointTimes: selected.laps?.map(l => l.timeDisplay) || [],
       penaltyMs: selected.penaltyMs || 0,
+      totalTimeMs: selected.totalTimeMs,
       overallRank,
       genderRank,
       categoryRank,
