@@ -100,10 +100,7 @@ export function extractTimeOfDay(raw: string): string {
 export function formatDuration(ms: number | null): string {
   if (ms == null || !Number.isFinite(ms)) return "-";
   const isNegative = ms < 0;
-  const absMs = Math.abs(ms);
-  // Cap display at 100 hours — anything larger is clearly invalid data
-  if (absMs >= 360_000_000) return isNegative ? "INVALID" : ">99h";
-  const total = Math.floor(absMs / 1000);
+  const total = Math.floor(Math.abs(ms) / 1000);
   const h = Math.floor(total / 3600);
   const m = Math.floor((total % 3600) / 60);
   const s = total % 60;
