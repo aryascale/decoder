@@ -157,10 +157,10 @@ export function calculatePace(totalMs: number | null, category: string | undefin
   if (distance === 0) return "--:--"; 
   
   const totalSeconds = Math.floor(totalMs / 1000);
-  const paceSeconds = totalSeconds / distance;
+  const paceSeconds = Math.round(totalSeconds / distance);
   
   const minutes = Math.floor(paceSeconds / 60);
-  const seconds = Math.round(paceSeconds % 60);
+  const seconds = paceSeconds % 60;
   
   const pad = (n: number) => n.toString().padStart(2, "0");
   return `${pad(minutes)}:${pad(seconds)}`;
