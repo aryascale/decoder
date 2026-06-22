@@ -108,7 +108,7 @@ export function useLeaderboardData(eventId: string) {
         // Load manual start map from API
         const manualStartMap = new Map<string, string>();
         try {
-          const msRes = await fetch(`/api/manual-start-bib?eventId=${eventId}`);
+          const msRes = await fetch(`/api/manual-start-bib?eventId=${eventId}&_t=${Date.now()}`);
           if (msRes.ok) {
             const msData = await msRes.json();
             if (Array.isArray(msData)) {
@@ -120,7 +120,7 @@ export function useLeaderboardData(eventId: string) {
         // Load manual finish map from API
         const manualFinishMap = new Map<string, string>();
         try {
-          const mfRes = await fetch(`/api/manual-finish-bib?eventId=${eventId}`);
+          const mfRes = await fetch(`/api/manual-finish-bib?eventId=${eventId}&_t=${Date.now()}`);
           if (mfRes.ok) {
             const mfData = await mfRes.json();
             if (Array.isArray(mfData)) {

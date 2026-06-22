@@ -74,8 +74,13 @@ export default function parseTimeToMs(raw: string): {
 
 export function extractTimeOfDay(raw: string): string {
   if (!raw) return "-";
-  // Attempt to match time either after a space or at the beginning of the string
-  let m = raw.match(/(?:^|\s)(\d{2}:\d{2}:\d{2}(?:[:\.]\d{1,3})?)/);
+  
+  // First, try to match a time that comes AFTER a space (e.g. from "YYYY-MM-DD HH:MM:SS" or "DD:MM:YYYY HH:MM:SS")
+  let m = raw.match(/\s(\d{2}:\d{2}:\d{2}(?:[:\.]\d{1,3})?)/);
+  if (m) return m[1];
+
+  // If no space, try to match time at the beginning or anywhere
+  m = raw.match(/(?:^|\s|T)(\d{2}:\d{2}:\d{2}(?:[:\.]\d{1,3})?)/);
   if (!m) {
      // fallback if it somehow just has it
      m = raw.match(/(\d{2}:\d{2}:\d{2}(?:[:\.]\d{1,3})?)/);
