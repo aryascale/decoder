@@ -531,15 +531,15 @@ export default function LeaderboardTable({
                   <div className="flex flex-wrap md:flex-nowrap items-center bg-stone-50 border-t-2 border-stone-100 rounded-b-xl overflow-hidden divide-y md:divide-y-0 md:divide-x-2 divide-stone-100">
                     <div className="flex-1 px-4 py-2 sm:px-5 sm:py-3">
                       <div className="text-[9px] uppercase font-black text-stone-400 tracking-widest mb-0.5">Start</div>
-                      <div className="font-mono text-[10px] sm:text-xs font-bold text-blue-600">{r.startTimeRaw || "-"}</div>
+                      <div className="font-mono text-[10px] sm:text-xs font-bold text-emerald-600">{r.startTimeRaw || "-"}</div>
                     </div>
                     <div className="flex-1 px-4 py-2 sm:px-5 sm:py-3">
                       <div className="text-[9px] uppercase font-black text-stone-400 tracking-widest mb-0.5">Finish</div>
-                      <div className="font-mono text-[10px] sm:text-xs font-bold text-emerald-600">{r.finishTimeRaw || "-"}</div>
+                      <div className="font-mono text-[10px] sm:text-xs font-bold text-red-600">{r.finishTimeRaw || "-"}</div>
                     </div>
                     <div className="flex-1 px-4 py-2 sm:px-5 sm:py-3">
                       <div className="text-[9px] uppercase font-black text-stone-400 tracking-widest mb-0.5">Total</div>
-                      <div className="font-mono text-[10px] sm:text-xs font-bold text-red-500">
+                      <div className="font-mono text-[10px] sm:text-xs font-bold text-stone-900">
                         {r.totalTimeDisplay === "INVALID" ? "Start time tidak valid" : r.totalTimeDisplay}
                       </div>
                     </div>
