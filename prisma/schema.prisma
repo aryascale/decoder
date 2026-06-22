@@ -34,6 +34,8 @@ model Event {
   isDeleted          Boolean             @default(false)
   publishAt          DateTime?
   content            Json?
+  isLoopMode         Boolean             @default(false)
+  minLapTimeMs       Int                 @default(300000)
   banners            Banner[]
   categories         Category[]
   registrations      EventRegistration[]
@@ -273,7 +275,6 @@ model RunnerRecord {
   checkpoint   Checkpoint @relation(fields: [checkpointId], references: [id], onDelete: Cascade)
   event        Event      @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
-  @@unique([eventId, epc, checkpointId])
   @@index([eventId])
   @@index([epc])
 }
