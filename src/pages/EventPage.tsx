@@ -776,11 +776,23 @@ export default function EventPage() {
         // Load manual start map from API
         const manualStartMap = new Map<string, string>();
         try {
-          const msRes = await fetch(`/api/manual-start-bib?eventId=${event.id}`);
+          const msRes = await fetch(`/api/manual-start-bib?eventId=${event.id}&_t=${Date.now()}`);
           if (msRes.ok) {
             const msData = await msRes.json();
             if (Array.isArray(msData)) {
               msData.forEach((ms: any) => manualStartMap.set(ms.epc, ms.timeStr));
+            }
+          }
+        } catch {}
+
+        // Load manual finish map from API
+        const manualFinishMap = new Map<string, string>();
+        try {
+          const mfRes = await fetch(`/api/manual-finish-bib?eventId=${event.id}&_t=${Date.now()}`);
+          if (mfRes.ok) {
+            const mfData = await mfRes.json();
+            if (Array.isArray(mfData)) {
+              mfData.forEach((mf: any) => manualFinishMap.set(mf.epc, mf.timeStr));
             }
           }
         } catch {}
@@ -871,7 +883,15 @@ export default function EventPage() {
 
             const isDQ = !!dqMap[p.epc];
             if (hiddenMap[p.epc]) return;
-            const finishEntry = finishMap.get(p.epc);
+            let finishEntry = finishMap.get(p.epc);
+
+            const manualFinishStr = manualFinishMap.get(p.epc);
+            if (manualFinishStr) {
+              const mfMs = buildOverrideFromFinishDate(Date.now(), manualFinishStr);
+              if (mfMs) {
+                finishEntry = { ms: mfMs, raw: manualFinishStr };
+              }
+            }
 
             const pushIncompleteRow = (statusText: string, computedStartMs?: number | null) => {
               baseRows.push({
