@@ -469,102 +469,39 @@ export default function LeaderboardTable({
           </div>
 
           {/* Table Rows — sharp corners */}
-          <div className="flex flex-col">
-            {filtered.map((r) => {
-              const pos = r.rank ?? "-";
-              const isSpecial = r.totalTimeDisplay === "DNF" || r.totalTimeDisplay === "DSQ";
-              const isActive = r.totalTimeDisplay === "ACTIVE";
-              const isTop3 = r.rank != null && r.rank <= 3;
+          <div className="flex flex-col overflow-x-auto">
+            <div className="min-w-[800px] md:min-w-0">
+              {filtered.map((r) => {
+                const pos = r.rank ?? "-";
+                const isSpecial = r.totalTimeDisplay === "DNF" || r.totalTimeDisplay === "DSQ";
+                const isActive = r.totalTimeDisplay === "ACTIVE";
+                const isTop3 = r.rank != null && r.rank <= 3;
 
-              return (
-                <div
-                  key={r.epc}
-                  onClick={() => onSelect?.(r)}
-                  className={`group cursor-pointer transition-all duration-150 hover:bg-slate-50 ${getRowBorder(r.rank)} ${
-                    isSpecial ? 'bg-red-50/50' :
-                    isActive ? 'bg-emerald-50/30' :
-                    'bg-white'
-                  } border-b border-slate-100`}
-                >
-                  {/* Desktop row */}
-                  <div className="hidden md:grid grid-cols-[44px_1fr_90px_90px_90px_110px_80px_28px] gap-2 items-center px-4 py-3">
-                    {/* Rank */}
-                    <div className={`font-black text-base ${
-                      r.rank === 1 ? 'text-amber-500' :
-                      r.rank === 2 ? 'text-slate-400' :
-                      r.rank === 3 ? 'text-orange-400' :
-                      'text-slate-300'
-                    }`}>
-                      {pos}
-                    </div>
-
-                    {/* Name + Avatar + BIB */}
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                        r.rank === 1 ? 'bg-amber-100 text-amber-700' :
-                        r.rank === 2 ? 'bg-slate-100 text-slate-600' :
-                        r.rank === 3 ? 'bg-orange-100 text-orange-700' :
-                        'bg-slate-50 text-slate-400'
+                return (
+                  <div
+                    key={r.epc}
+                    onClick={() => onSelect?.(r)}
+                    className={`group cursor-pointer transition-all duration-150 hover:bg-slate-50 ${getRowBorder(r.rank)} ${
+                      isSpecial ? 'bg-red-50/50' :
+                      isActive ? 'bg-emerald-50/30' :
+                      'bg-white'
+                    } border-b border-slate-100`}
+                  >
+                    {/* Desktop row */}
+                    <div className="hidden md:grid grid-cols-[44px_1fr_90px_90px_90px_110px_80px_28px] gap-2 items-center px-4 py-3">
+                      {/* Rank */}
+                      <div className={`font-black text-base ${
+                        r.rank === 1 ? 'text-amber-500' :
+                        r.rank === 2 ? 'text-slate-400' :
+                        r.rank === 3 ? 'text-orange-400' :
+                        'text-slate-300'
                       }`}>
-                        {(r.name || "?").charAt(0).toUpperCase()}
+                        {pos}
                       </div>
-                      <div className="min-w-0">
-                        <div className="font-semibold text-slate-800 text-sm truncate leading-tight">{r.name || "-"}</div>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="font-mono text-[10px] font-semibold text-red-400">{r.bib}</span>
-                          {r.ageCategory && (
-                            <>
-                              <span className="text-slate-200">•</span>
-                              <span className="text-[10px] text-slate-400">{r.ageCategory}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
 
-                    {/* Category */}
-                    <div className="text-xs font-medium text-slate-500">{r.category || "-"}</div>
-
-                    {/* Start */}
-                    <div className="font-mono text-[11px] text-emerald-500 font-medium">{r.startTimeRaw || "-"}</div>
-
-                    {/* Finish */}
-                    <div className="font-mono text-[11px] text-rose-400 font-medium">{r.finishTimeRaw || "-"}</div>
-
-                    {/* Race Time */}
-                    <div className={`font-mono font-bold text-xs px-2.5 py-1 rounded inline-flex items-center justify-center ${
-                      isSpecial ? 'bg-red-100 text-red-600' :
-                      isActive ? 'bg-emerald-100 text-emerald-600' :
-                      isTop3 ? 'bg-slate-800 text-white' :
-                      'bg-slate-100 text-slate-700'
-                    }`}>
-                      {r.totalTimeDisplay}
-                    </div>
-
-                    {/* Avg Pace */}
-                    <div className="font-mono text-[11px] font-semibold text-slate-500">
-                      {calculatePace(r.totalTimeMs, r.category)}
-                    </div>
-
-                    {/* Chevron */}
-                    <div className="text-slate-200 group-hover:text-slate-400 transition-colors flex justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                    </div>
-                  </div>
-
-                  {/* Mobile card */}
-                  <div className="md:hidden p-3.5">
-                    <div className="flex items-start gap-3">
-                      <div className="flex flex-col items-center gap-1 flex-shrink-0">
-                        <span className={`font-black text-sm ${
-                          r.rank === 1 ? 'text-amber-500' :
-                          r.rank === 2 ? 'text-slate-400' :
-                          r.rank === 3 ? 'text-orange-400' :
-                          'text-slate-300'
-                        }`}>
-                          {pos}
-                        </span>
-                        <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold ${
+                      {/* Name + Avatar + BIB */}
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
                           r.rank === 1 ? 'bg-amber-100 text-amber-700' :
                           r.rank === 2 ? 'bg-slate-100 text-slate-600' :
                           r.rank === 3 ? 'bg-orange-100 text-orange-700' :
@@ -572,71 +509,136 @@ export default function LeaderboardTable({
                         }`}>
                           {(r.name || "?").charAt(0).toUpperCase()}
                         </div>
+                        <div className="min-w-0">
+                          <div className="font-semibold text-slate-800 text-sm truncate leading-tight">{r.name || "-"}</div>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="font-mono text-[10px] font-semibold text-red-400">{r.bib}</span>
+                            {r.ageCategory && (
+                              <>
+                                <span className="text-slate-200">•</span>
+                                <span className="text-[10px] text-slate-400">{r.ageCategory}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
                       </div>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <div className="font-semibold text-slate-800 text-sm truncate">{r.name || "-"}</div>
-                            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                              <span className="font-mono text-[10px] font-semibold text-red-400">BIB {r.bib}</span>
-                              <span className="text-[10px] text-slate-400">{r.category}</span>
-                              {r.ageCategory && <span className="text-[10px] text-slate-300">• {r.ageCategory}</span>}
+                      {/* Category */}
+                      <div className="text-xs font-medium text-slate-500">{r.category || "-"}</div>
+
+                      {/* Start */}
+                      <div className="font-mono text-[11px] text-emerald-500 font-medium">{r.startTimeRaw || "-"}</div>
+
+                      {/* Finish */}
+                      <div className="font-mono text-[11px] text-rose-400 font-medium">{r.finishTimeRaw || "-"}</div>
+
+                      {/* Race Time */}
+                      <div className={`font-mono font-bold text-xs px-2.5 py-1 rounded inline-flex items-center justify-center ${
+                        isSpecial ? 'bg-red-100 text-red-600' :
+                        isActive ? 'bg-emerald-100 text-emerald-600' :
+                        isTop3 ? 'bg-slate-800 text-white' :
+                        'bg-slate-100 text-slate-700'
+                      }`}>
+                        {r.totalTimeDisplay}
+                      </div>
+
+                      {/* Avg Pace */}
+                      <div className="font-mono text-[11px] font-semibold text-slate-500">
+                        {calculatePace(r.totalTimeMs, r.category)}
+                      </div>
+
+                      {/* Chevron */}
+                      <div className="text-slate-200 group-hover:text-slate-400 transition-colors flex justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                      </div>
+                    </div>
+
+                    {/* Mobile card */}
+                    <div className="md:hidden p-3.5">
+                      <div className="flex items-start gap-3">
+                        <div className="flex flex-col items-center gap-1 flex-shrink-0">
+                          <span className={`font-black text-sm ${
+                            r.rank === 1 ? 'text-amber-500' :
+                            r.rank === 2 ? 'text-slate-400' :
+                            r.rank === 3 ? 'text-orange-400' :
+                            'text-slate-300'
+                          }`}>
+                            {pos}
+                          </span>
+                          <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold ${
+                            r.rank === 1 ? 'bg-amber-100 text-amber-700' :
+                            r.rank === 2 ? 'bg-slate-100 text-slate-600' :
+                            r.rank === 3 ? 'bg-orange-100 text-orange-700' :
+                            'bg-slate-50 text-slate-400'
+                          }`}>
+                            {(r.name || "?").charAt(0).toUpperCase()}
+                          </div>
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <div className="font-semibold text-slate-800 text-sm truncate">{r.name || "-"}</div>
+                              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                <span className="font-mono text-[10px] font-semibold text-red-400">BIB {r.bib}</span>
+                                <span className="text-[10px] text-slate-400">{r.category}</span>
+                                {r.ageCategory && <span className="text-[10px] text-slate-300">• {r.ageCategory}</span>}
+                              </div>
+                            </div>
+                            <div className={`flex-shrink-0 font-mono font-bold text-[11px] px-2 py-1 rounded ${
+                              isSpecial ? 'bg-red-100 text-red-600' :
+                              isActive ? 'bg-emerald-100 text-emerald-600' :
+                              isTop3 ? 'bg-slate-800 text-white' :
+                              'bg-slate-100 text-slate-700'
+                            }`}>
+                              {r.totalTimeDisplay}
                             </div>
                           </div>
-                          <div className={`flex-shrink-0 font-mono font-bold text-[11px] px-2 py-1 rounded ${
-                            isSpecial ? 'bg-red-100 text-red-600' :
-                            isActive ? 'bg-emerald-100 text-emerald-600' :
-                            isTop3 ? 'bg-slate-800 text-white' :
-                            'bg-slate-100 text-slate-700'
-                          }`}>
-                            {r.totalTimeDisplay}
-                          </div>
-                        </div>
 
-                        <div className="flex items-center gap-3 mt-2 text-[10px]">
-                          <div>
-                            <span className="text-slate-400">Start </span>
-                            <span className="font-mono font-medium text-emerald-500">{r.startTimeRaw || "-"}</span>
-                          </div>
-                          <div>
-                            <span className="text-slate-400">Finish </span>
-                            <span className="font-mono font-medium text-rose-400">{r.finishTimeRaw || "-"}</span>
-                          </div>
-                          <div>
-                            <span className="text-slate-400">Pace </span>
-                            <span className="font-mono font-medium text-slate-500">{calculatePace(r.totalTimeMs, r.category)}</span>
+                          <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-2 text-[10px]">
+                            <div className="whitespace-nowrap">
+                              <span className="text-slate-400">Start </span>
+                              <span className="font-mono font-medium text-emerald-500">{r.startTimeRaw || "-"}</span>
+                            </div>
+                            <div className="whitespace-nowrap">
+                              <span className="text-slate-400">Finish </span>
+                              <span className="font-mono font-medium text-rose-400">{r.finishTimeRaw || "-"}</span>
+                            </div>
+                            <div className="whitespace-nowrap">
+                              <span className="text-slate-400">Pace </span>
+                              <span className="font-mono font-medium text-slate-500">{calculatePace(r.totalTimeMs, r.category)}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
+
+                    {/* Laps (if any) */}
+                    {r.laps && r.laps.length > 0 && (
+                      <div className="flex gap-2 px-4 pb-3 overflow-x-auto">
+                        {r.laps.map((lap, i) => (
+                          <div key={i} className="flex-shrink-0 bg-slate-50 border border-slate-100 rounded px-2 py-1">
+                            <span className="text-[9px] font-bold text-slate-400 uppercase block">{lap.label}</span>
+                            <span className="font-mono text-xs font-bold text-slate-600">{lap.timeDisplay}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                );
+              })}
 
-                  {/* Laps (if any) */}
-                  {r.laps && r.laps.length > 0 && (
-                    <div className="flex gap-2 px-4 pb-3 overflow-x-auto">
-                      {r.laps.map((lap, i) => (
-                        <div key={i} className="flex-shrink-0 bg-slate-50 border border-slate-100 rounded px-2 py-1">
-                          <span className="text-[9px] font-bold text-slate-400 uppercase block">{lap.label}</span>
-                          <span className="font-mono text-xs font-bold text-slate-600">{lap.timeDisplay}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+              {filtered.length === 0 && (
+                <div className="text-center py-16 bg-slate-50 border border-dashed border-slate-200 px-4">
+                  <div className="font-bold text-xl text-slate-300 mb-1 tracking-tight">No Tracking Data</div>
+                  <div className="text-sm font-medium text-slate-400">
+                    {rows.length === 0
+                      ? "The leaderboards are currently empty. Awaiting timing data."
+                      : `No results found for "${q}".`}
+                  </div>
                 </div>
-              );
-            })}
-
-            {filtered.length === 0 && (
-              <div className="text-center py-16 bg-slate-50 border border-dashed border-slate-200 px-4">
-                <div className="font-bold text-xl text-slate-300 mb-1 tracking-tight">No Tracking Data</div>
-                <div className="text-sm font-medium text-slate-400">
-                  {rows.length === 0
-                    ? "The leaderboards are currently empty. Awaiting timing data."
-                    : `No results found for "${q}".`}
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </>
       )}
