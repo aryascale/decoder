@@ -544,8 +544,8 @@ export default function LeaderboardTable({
           {/* Desktop Table View (Duolingo Style) */}
           <div className="hidden md:flex flex-col gap-3 overflow-x-auto pb-4">
             {/* Header */}
-            <div className="flex gap-4 px-2 py-2 text-[11px] font-black tracking-widest text-stone-400 uppercase min-w-0">
-              <div className="flex-1 grid gap-3 lg:gap-4 px-4 lg:px-6 items-center" style={{ gridTemplateColumns: gridTemplateColumnsInner }}>
+            <div className="flex gap-2 lg:gap-4 items-center px-4 lg:px-6 py-2 mx-2 text-[11px] font-black tracking-widest text-stone-400 uppercase min-w-0">
+              <div className="flex-1 grid gap-3 lg:gap-4 items-center min-w-0" style={{ gridTemplateColumns: gridTemplateColumnsInner }}>
                 <div className="text-center">Pos</div>
                 <div>BIB</div>
                 <div>Athlete Name</div>
@@ -558,7 +558,7 @@ export default function LeaderboardTable({
                   return <div key={i} className="text-center uppercase" title={label}>{label}</div>;
                 })}
               </div>
-              <div className="w-[140px] flex-shrink-0 text-right pr-4">Race Time</div>
+              <div className="w-[140px] flex-shrink-0 text-right">Race Time</div>
             </div>
 
             {/* Rows */}
@@ -568,10 +568,13 @@ export default function LeaderboardTable({
               const isSpecial = r.totalTimeDisplay === "DNF" || r.totalTimeDisplay === "DSQ";
 
               return (
-                <div key={r.epc} className="flex gap-4 items-center px-2 min-w-0">
+                <div 
+                  key={r.epc} 
+                  onClick={() => onSelect?.(r)}
+                  className={`flex gap-2 lg:gap-4 items-center px-4 lg:px-6 py-3 lg:py-4 mx-2 bg-white rounded-2xl border-2 border-stone-200 border-b-[6px] cursor-pointer hover:-translate-y-1 hover:border-stone-300 transition-all min-w-0 ${isTop10 && showTop10Badge ? 'border-yellow-200 bg-yellow-50/50' : ''} ${isSpecial ? 'border-red-200 bg-red-50/50' : ''}`}
+                >
                   <div 
-                    onClick={() => onSelect?.(r)} 
-                    className={`flex-1 grid gap-3 lg:gap-4 items-center px-4 lg:px-6 py-3 lg:py-4 bg-white rounded-2xl border-2 border-stone-200 border-b-[6px] cursor-pointer hover:-translate-y-1 hover:border-stone-300 transition-all min-w-0 ${isTop10 && showTop10Badge ? 'border-yellow-200 bg-yellow-50/50' : ''} ${isSpecial ? 'border-red-200 bg-red-50/50' : ''}`} 
+                    className="flex-1 grid gap-3 lg:gap-4 items-center min-w-0" 
                     style={{ gridTemplateColumns: gridTemplateColumnsInner }}
                   >
                     <div className="text-center">
@@ -610,7 +613,7 @@ export default function LeaderboardTable({
                   </div>
                   
                   {/* Race Time Pill */}
-                  <div className="w-[140px] flex-shrink-0 text-right pr-2 lg:pr-4">
+                  <div className="w-[140px] flex-shrink-0 text-right">
                     <span className={`font-mono font-black tracking-tighter bg-stone-100 border-2 border-stone-200 border-b-[4px] px-2 py-1.5 rounded-xl inline-block w-full text-center overflow-hidden text-ellipsis whitespace-nowrap ${r.totalTimeDisplay.length > 9 ? 'text-xs' : 'text-sm lg:text-lg'} ${isSpecial ? "text-orange-600" : r.totalTimeDisplay === "ACTIVE" ? "text-emerald-600 border-emerald-200 bg-emerald-50" : "text-stone-900"}`}>
                       {r.totalTimeDisplay}
                     </span>
