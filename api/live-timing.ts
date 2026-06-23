@@ -24,7 +24,16 @@ export default async function handler(event: any) {
       ORDER BY rr.time ASC
     `, [eventId]);
 
-    return successResponse({ registrations, records });
+    return {
+      statusCode: 200,
+      headers: {
+        ...CORS_HEADERS,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      },
+      body: JSON.stringify({ registrations, records })
+    };
   } catch(e: any) {
     console.error('[LIVE TIMING] Error:', e);
     return errorResponse(e.message || 'Internal server error');
