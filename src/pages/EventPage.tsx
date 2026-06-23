@@ -1230,7 +1230,7 @@ export default function EventPage() {
         setHasLoadedOnce(true);
       }
     })();
-  }, [recalcTick, event?.id, event?.categories, registeredParticipants]);
+  }, [recalcTick, event?.id, event?.categories, registeredParticipants, recordsByEpc, checkpoints]);
 
   // Patch latestCp from live timing directly into rows
   const overallWithLatestCp = useMemo(() => {
