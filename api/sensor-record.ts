@@ -21,15 +21,17 @@ export default async function handler(req: any) {
     const [hours, minutes, seconds] = timePart.split(':').map(Number);
     const ms = msPart ? parseInt(msPart.padEnd(3, '0').slice(0, 3)) : 0;
 
-    const recordTime = new Date(
-      now.getFullYear(), 
-      now.getMonth(), 
-      now.getDate(), 
-      hours || 0, 
-      minutes || 0, 
-      seconds || 0, 
-      ms
-    );
+    // The sensor time is assumed to be local time (WIB / GMT+7).
+    // Construct an ISO string with +07:00 so the UTC conversion is correct.
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const date = String(now.getDate()).padStart(2, '0');
+    const hr = String(hours || 0).padStart(2, '0');
+    const min = String(minutes || 0).padStart(2, '0');
+    const sec = String(seconds || 0).padStart(2, '0');
+    const msec = String(ms).padStart(3, '0');
+    
+    const recordTime = new Date(`${year}-${month}-${date}T${hr}:${min}:${sec}.${msec}+07:00`);
 
     let activeEventId = req.queryStringParameters?.eventId || eventId || null;
 
