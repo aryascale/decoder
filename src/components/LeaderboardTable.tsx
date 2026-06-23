@@ -461,21 +461,21 @@ export default function LeaderboardTable({
             </div>
           </div>
 
-          {/* Column Header */}
-          <div className="hidden md:grid grid-cols-[44px_1fr_90px_90px_90px_110px_80px_28px] gap-2 px-4 py-2.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-0.5">
-            <div>#</div>
-            <div>Name</div>
-            <div>Category</div>
-            <div>Start</div>
-            <div>Finish</div>
-            <div>Race Time</div>
-            <div>Avg Pace</div>
-            <div></div>
-          </div>
-
           {/* Table Rows — sharp corners */}
           <div className="flex flex-col gap-2.5 overflow-x-auto pb-4 pt-1">
-            <div className="min-w-[800px] md:min-w-0 flex flex-col gap-2.5">
+            <div className="w-full md:min-w-[800px] flex flex-col gap-2.5">
+              {/* Column Header */}
+              <div className="hidden md:grid grid-cols-[44px_1fr_90px_90px_90px_110px_80px_28px] gap-2 px-4 py-2.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-0.5">
+                <div>#</div>
+                <div>Name</div>
+                <div>Category</div>
+                <div>Start</div>
+                <div>Finish</div>
+                <div>Race Time</div>
+                <div>Avg Pace</div>
+                <div></div>
+              </div>
+
               {filtered.map((r) => {
                 const pos = r.rank ?? "-";
                 const isSpecial = r.totalTimeDisplay === "DNF" || r.totalTimeDisplay === "DSQ";
@@ -559,8 +559,8 @@ export default function LeaderboardTable({
                     </div>
 
                     {/* Mobile card */}
-                    <div className="md:hidden p-3.5">
-                      <div className="flex items-start gap-3">
+                    <div className="md:hidden p-3">
+                      <div className="flex items-start gap-2.5">
                         <div className="flex flex-col items-center gap-1 flex-shrink-0">
                           <span className={`font-black text-sm ${
                             r.rank === 1 ? 'text-amber-500' :
@@ -570,7 +570,7 @@ export default function LeaderboardTable({
                           }`}>
                             {pos}
                           </span>
-                          <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold ${
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
                             r.rank === 1 ? 'bg-amber-100 text-amber-700' :
                             r.rank === 2 ? 'bg-slate-100 text-slate-600' :
                             r.rank === 3 ? 'bg-orange-100 text-orange-700' :
@@ -600,7 +600,7 @@ export default function LeaderboardTable({
                             </div>
                           </div>
 
-                          <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-2 text-[10px]">
+                          <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1.5 text-[10px]">
                             <div className="whitespace-nowrap">
                               <span className="text-slate-400">Start </span>
                               <span className="font-mono font-medium text-emerald-500">{r.startTimeRaw || "-"}</span>
@@ -620,7 +620,7 @@ export default function LeaderboardTable({
 
                     {/* Laps (if any) */}
                     {r.laps && r.laps.length > 0 && (
-                      <div className="flex gap-2 px-4 pb-3 overflow-x-auto">
+                      <div className="flex gap-2 px-3 pb-2.5 overflow-x-auto">
                         {r.laps.map((lap, i) => (
                           <div key={i} className="flex-shrink-0 bg-slate-50 border border-slate-100 rounded px-2 py-1">
                             <div className="flex justify-between items-start gap-3 mb-0.5">
