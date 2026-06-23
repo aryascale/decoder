@@ -227,7 +227,7 @@ export function useLeaderboardData(eventId: string) {
           let rawStartStrForDisplay = startEntry?.raw;
 
           if ((currentEvent as any)?.isLoopMode) {
-             const minLapMs = (currentEvent as any).minLapTimeMs || 300000;
+             const minLapMs = (currentEvent as any).minLapTimeMs != null ? (currentEvent as any).minLapTimeMs : 300000;
              const maxLaps = (currentEvent?.content as any)?.maxLaps ? parseInt((currentEvent?.content as any).maxLaps) : null;
              let baseStartTime = startMs;
              const validLaps: any[] = [];

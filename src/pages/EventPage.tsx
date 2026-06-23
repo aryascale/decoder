@@ -891,7 +891,7 @@ export default function EventPage() {
             // ================= LOOP MODE LOGIC =================
             // Only apply automatic Loop Mode logic if there's no manual CSV finish override
             if ((event as any)?.isLoopMode && !manualFinishStr && epsRecords && epsRecords.length > 0) {
-              const minLapMs = (event as any).minLapTimeMs || 300000;
+              const minLapMs = (event as any).minLapTimeMs != null ? (event as any).minLapTimeMs : 300000;
               const maxLaps = (event as any).content?.maxLaps ? parseInt((event as any).content.maxLaps) : null;
               
               const startEntry = startMap.get(p.epc);
@@ -952,8 +952,12 @@ export default function EventPage() {
                 
                 const lapsDisplay = validLaps.map((lap) => {
                    const duration = lap.time - baseStartTime!;
+                   let displayName = lap.name;
+                   if (displayName.toUpperCase() === "START/FINISH" || displayName.toUpperCase() === "START / FINISH") {
+                       displayName = "FINISH";
+                   }
                    return {
-                     label: `L${lap.lapIndex} - ${lap.name}`,
+                     label: `L${lap.lapIndex} - ${displayName}`,
                      timeDisplay: formatDuration(duration),
                      isDuration: true
                    };
@@ -1104,9 +1108,17 @@ export default function EventPage() {
               t0Ms = fallbackStartMs || null;
             }
 
-            const matchedLaps = checkpoints.map((cpDef: any) => {
+            const matchedLaps = checkpoints.map((cpDef: any, index: number) => {
                const cpId = cpDef.identitas || cpDef.id;
-               const label = cpDef.name || cpDef.identitas || cpDef.id;
+               let label = cpDef.name || cpDef.identitas || cpDef.id;
+               
+               if (label.toUpperCase() === "START/FINISH" || label.toUpperCase() === "START / FINISH") {
+                   if (index === 0 && checkpoints.length > 1) {
+                       label = "START";
+                   } else {
+                       label = "FINISH";
+                   }
+               }
                
                // Find if this EPC has a record for this checkpoint
                const recordForCp = epsRecords?.find((rec: any) => rec.identitas === cpId);

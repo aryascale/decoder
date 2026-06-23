@@ -2957,8 +2957,11 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
                       type="number"
                       className="search w-full sm:w-1/3"
                       placeholder="e.g., 5"
-                      value={eventData?.minLapTimeMs ? eventData.minLapTimeMs / 60000 : 5}
-                      onChange={(e) => setEventData({ ...eventData, minLapTimeMs: (parseInt(e.target.value) || 5) * 60000 })}
+                      value={eventData?.minLapTimeMs != null ? eventData.minLapTimeMs / 60000 : ''}
+                      onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          setEventData({ ...eventData, minLapTimeMs: isNaN(val) ? 0 : val * 60000 });
+                      }}
                     />
                     <div className="text-xs text-gray-500 mt-2">
                       Guna mencegah duplikasi (Debounce). Jika pelari membaca tag dua kali dalam rentang waktu ini, data kedua akan diabaikan dan <strong>waktu pertama menginjak karpet</strong> akan dipertahankan.
