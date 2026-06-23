@@ -33,7 +33,7 @@ function formatEvent(event: any) {
     isActive: !!event.isActive,
     isDraft: !!event.isDraft,
     isLoopMode: !!event.isLoopMode,
-    minLapTimeMs: event.minLapTimeMs || 300000,
+    minLapTimeMs: event.minLapTimeMs != null ? event.minLapTimeMs : 300000,
     publishAt: event.publishAt instanceof Date ? event.publishAt.toISOString() : event.publishAt,
     categories: event._categories || [],
     content,
@@ -143,7 +143,7 @@ export default async function handler(req: any) {
       const eventIdNew = crypto.randomUUID();
       await query(
         'INSERT INTO Event (id, name, slug, description, eventDate, location, latitude, longitude, isActive, isDraft, publishAt, status, logoUrl, bannerUrl, createdAt, updatedAt, isLoopMode, minLapTimeMs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?)',
-        [eventIdNew, name, slug, description || null, new Date(eventDate), location || null, latitude || null, longitude || null, isActive ?? true, isDraft ?? false, publishAt ? new Date(publishAt) : null, 'upcoming', null, null, isLoopMode ?? false, minLapTimeMs ?? 300000]
+        [eventIdNew, name, slug, description || null, new Date(eventDate), location || null, latitude || null, longitude || null, isActive ?? true, isDraft ?? false, publishAt ? new Date(publishAt) : null, 'upcoming', null, null, isLoopMode ?? false, minLapTimeMs != null ? minLapTimeMs : 300000]
       );
 
       const defaultCategories = categories || [];

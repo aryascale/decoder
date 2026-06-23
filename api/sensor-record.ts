@@ -91,7 +91,7 @@ export default async function handler(req: any) {
       [activeEventId]
     );
     const isLoopMode = eventSettings.length > 0 && eventSettings[0].isLoopMode;
-    const minLapTimeMs = eventSettings.length > 0 ? eventSettings[0].minLapTimeMs || 300000 : 300000;
+    const minLapTimeMs = eventSettings.length > 0 ? (eventSettings[0].minLapTimeMs != null ? eventSettings[0].minLapTimeMs : 300000) : 300000;
 
     // Fetch the latest record for this runner at this checkpoint
     const existingRecords: any[] = await query(
