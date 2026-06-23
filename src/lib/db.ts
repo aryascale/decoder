@@ -20,7 +20,9 @@ export const pool = mysql.createPool({
   database,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  dateStrings: true,
+  timezone: '+00:00'
 });
 
 export async function query(sql: string, params: any[] = []): Promise<any[]> {

@@ -17,7 +17,7 @@ export default async function handler(event: any) {
     `, [eventId]);
 
     const records: any[] = await query(`
-      SELECT rr.epc, rr.time, c.identitas, c.order, c.name as checkpointName
+      SELECT rr.id, rr.epc, rr.time, c.identitas, c.order, c.name as checkpointName
       FROM RunnerRecord rr
       JOIN Checkpoint c ON rr.checkpointId = c.id
       WHERE rr.eventId = ?

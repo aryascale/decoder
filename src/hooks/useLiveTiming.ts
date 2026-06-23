@@ -18,6 +18,7 @@ interface Registration {
 }
 
 interface RecordData {
+  id: string;
   epc: string;
   time: string;
   identitas: string;
@@ -100,9 +101,10 @@ export function useLiveTiming(eventId: string) {
         const epc = data.epc;
         const currentArr = prev[epc] || [];
 
-        const existingIdx = currentArr.findIndex(r => r.identitas === data.checkpoint.identitas);
+        const existingIdx = currentArr.findIndex(r => r.id && data.id && r.id === data.id);
 
         const newRecord: RecordData = {
+          id: data.id,
           epc,
           time: data.time,
           identitas: data.checkpoint.identitas,
