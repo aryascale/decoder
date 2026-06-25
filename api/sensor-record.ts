@@ -142,7 +142,7 @@ export default async function handler(req: any) {
 
       // Fetch the latest record for this runner at this checkpoint
       const existingRecords: any[] = await query(
-        `SELECT id, time FROM RunnerRecord WHERE eventId = ? AND epc = ? AND checkpointId = ? ORDER BY time DESC LIMIT 1`,
+        `SELECT id, time, rssi FROM RunnerRecord WHERE eventId = ? AND epc = ? AND checkpointId = ? ORDER BY time DESC LIMIT 1`,
         [activeEventId, e, checkpoint.id]
       );
 
@@ -168,12 +168,8 @@ export default async function handler(req: any) {
             record = { id: recordId, eventId: activeEventId, epc: e, checkpointId: checkpoint.id, time: recordTime, rssi, checkpoint };
           }
         } else {
-          // Legacy behavior: UPSERT (Update existing time)
-          await query(
-            `UPDATE RunnerRecord SET time = ?, rssi = ? WHERE id = ?`,
-            [recordTime, rssi || null, latestRecord.id]
-          );
-          record = { id: latestRecord.id, eventId: activeEventId, epc: e, checkpointId: checkpoint.id, time: recordTime, rssi, checkpoint };
+          // Legacy behavior: Keep the first recorded time, DO NOT update
+          record = { id: latestRecord.id, eventId: activeEventId, epc: e, checkpointId: checkpoint.id, time: latestRecord.time, rssi: latestRecord.rssi, checkpoint };
         }
       } else {
         // First time crossing this checkpoint
