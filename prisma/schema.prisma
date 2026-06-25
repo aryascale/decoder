@@ -270,6 +270,7 @@ model RunnerRecord {
   epc          String
   checkpointId String
   time         DateTime
+  rssi         String?
   createdAt    DateTime   @default(now())
 
   checkpoint   Checkpoint @relation(fields: [checkpointId], references: [id], onDelete: Cascade)

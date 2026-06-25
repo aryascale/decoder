@@ -23,7 +23,7 @@ export default async function handler(req: any) {
     const eventSettingsCache = new Map();
 
     for (const item of payloads) {
-      const { i, e, t, eventId } = item;
+      const { i, e, t, eventId, rssi } = item;
 
       if (!i || !e || !t) {
         results.push({ error: 'Missing required fields (i, e, t)', item });
@@ -162,27 +162,27 @@ export default async function handler(req: any) {
             // New Lap
             const recordId = `record-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
             await query(
-              `INSERT INTO RunnerRecord (id, eventId, epc, checkpointId, time, createdAt) VALUES (?, ?, ?, ?, ?, NOW())`,
-              [recordId, activeEventId, e, checkpoint.id, recordTime]
+              `INSERT INTO RunnerRecord (id, eventId, epc, checkpointId, time, rssi, createdAt) VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+              [recordId, activeEventId, e, checkpoint.id, recordTime, rssi || null]
             );
-            record = { id: recordId, eventId: activeEventId, epc: e, checkpointId: checkpoint.id, time: recordTime, checkpoint };
+            record = { id: recordId, eventId: activeEventId, epc: e, checkpointId: checkpoint.id, time: recordTime, rssi, checkpoint };
           }
         } else {
           // Legacy behavior: UPSERT (Update existing time)
           await query(
-            `UPDATE RunnerRecord SET time = ? WHERE id = ?`,
-            [recordTime, latestRecord.id]
+            `UPDATE RunnerRecord SET time = ?, rssi = ? WHERE id = ?`,
+            [recordTime, rssi || null, latestRecord.id]
           );
-          record = { id: latestRecord.id, eventId: activeEventId, epc: e, checkpointId: checkpoint.id, time: recordTime, checkpoint };
+          record = { id: latestRecord.id, eventId: activeEventId, epc: e, checkpointId: checkpoint.id, time: recordTime, rssi, checkpoint };
         }
       } else {
         // First time crossing this checkpoint
         const recordId = `record-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
         await query(
-          `INSERT INTO RunnerRecord (id, eventId, epc, checkpointId, time, createdAt) VALUES (?, ?, ?, ?, ?, NOW())`,
-          [recordId, activeEventId, e, checkpoint.id, recordTime]
+          `INSERT INTO RunnerRecord (id, eventId, epc, checkpointId, time, rssi, createdAt) VALUES (?, ?, ?, ?, ?, ?, NOW())`,
+          [recordId, activeEventId, e, checkpoint.id, recordTime, rssi || null]
         );
-        record = { id: recordId, eventId: activeEventId, epc: e, checkpointId: checkpoint.id, time: recordTime, checkpoint };
+        record = { id: recordId, eventId: activeEventId, epc: e, checkpointId: checkpoint.id, time: recordTime, rssi, checkpoint };
       }
 
       results.push({ success: true, record });
