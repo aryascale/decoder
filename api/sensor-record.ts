@@ -7,11 +7,34 @@ export default async function handler(req: any) {
   }
 
   try {
-    const data = req.body ? JSON.parse(req.body) : {};
-    const payloads = Array.isArray(data) ? data : [data];
+    let data: any = {};
+    if (req.body) {
+      if (typeof req.body === 'string') {
+        try {
+          data = JSON.parse(req.body);
+        } catch (e) {
+          console.error('Failed to parse req.body as JSON:', req.body);
+        }
+      } else {
+        data = req.body;
+      }
+    }
+
+    let payloads: any[] = [];
+    if (Array.isArray(data)) {
+      payloads = data;
+    } else if (typeof data === 'object' && data !== null) {
+      // Handle x-www-form-urlencoded array-like objects (e.g. { "0": { i: "...", ... } })
+      const keys = Object.keys(data);
+      if (keys.length > 0 && keys.every(k => !isNaN(Number(k)))) {
+        payloads = Object.values(data);
+      } else if (keys.length > 0) {
+        payloads = [data];
+      }
+    }
 
     if (payloads.length === 0) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Empty payload' }), headers: {} };
+      return { statusCode: 400, body: JSON.stringify({ error: 'Empty or invalid payload' }), headers: {} };
     }
 
     const now = new Date();
