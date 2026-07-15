@@ -7,6 +7,8 @@ import LandingNavbar from "../components/landing/LandingNavbar";
 import HeroCircularGallery from "../components/landing/HeroCircularGallery";
 import EventSearchModal from "../components/EventSearchModal";
 import ImageSlider3D from "../components/lightswind/3d-image-slider";
+import ReferenceShowcase from "../components/landing/ReferenceShowcase";
+import { useLenis } from "lenis/react";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -16,6 +18,7 @@ export default function LandingPage() {
   const [showComingSoon, setShowComingSoon] = useState(false);
   const [activeEcosystem, setActiveEcosystem] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
 
   useEffect(() => {
     const handleComingSoon = () => {
@@ -33,7 +36,10 @@ export default function LandingPage() {
 
   // Responsive state observer
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth <= 1024);
+    };
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -46,12 +52,12 @@ export default function LandingPage() {
   ];
 
   // Rotate hero image every 5 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setHeroIndex((prev) => (prev + 1) % heroImages.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [heroImages.length]);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setHeroIndex((prev: any) => (prev + 1) % heroImages.length);
+  //   }, 5000);
+  //   return () => clearInterval(interval);
+  // }, [heroImages.length]);
 
   // Rotate ecosystem carousel every 3.5 seconds
   useEffect(() => {
@@ -61,12 +67,10 @@ export default function LandingPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Parallax scroll handler
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // Parallax scroll handler using Lenis
+  useLenis((lenis) => {
+    setScrollY(lenis.scroll);
+  });
 
   // Scroll reveal observer
   useEffect(() => {
@@ -118,15 +122,17 @@ export default function LandingPage() {
 
   // Calculate safe parallax to prevent bleeding
   const getParallaxStyle = (desktopOffset: number, mobileOffset: number) => {
-    const offset = isMobile ? mobileOffset : desktopOffset;
+    // Add shift because ReferenceShowcase section pushes the journey section down
+    const showcaseHeight = isMobile ? 650 : 950;
+    const offset = (isMobile ? mobileOffset : desktopOffset) + showcaseHeight;
     const speed = isMobile ? 0.08 : 0.2;
     // Mobile needs clamped shift because container is portrait (no slack)
     const maxShift = isMobile ? 60 : 250;
-    
+
     let shift = (scrollY - offset) * speed;
     if (shift > maxShift) shift = maxShift;
     if (shift < -maxShift) shift = -maxShift;
-    
+
     return {
       backgroundPositionY: `calc(50% + ${shift}px)`,
       backgroundSize: isMobile ? "auto 130%" : "cover",
@@ -188,8 +194,8 @@ export default function LandingPage() {
         </div>
 
         {/* === 3D STAGE === */}
-        <div 
-          className={`relative w-full max-w-[100vw] mx-auto flex items-center justify-center transition-all duration-500 -mt-6 md:-mt-8 scroll-reveal ${isMobile ? 'h-[240px]' : 'h-[460px]'}`}
+        <div
+          className={`relative w-full max-w-[100vw] mx-auto flex items-center justify-center transition-all duration-500 ${isMobile ? '-mt-8 h-[240px]' : isTablet ? '-mt-6 h-[280px]' : '-mt-8 h-[460px]'} scroll-reveal`}
           style={{ transitionDelay: '200ms' }}
         >
           {/* Atmospheric glows */}
@@ -211,26 +217,26 @@ export default function LandingPage() {
               "/Assets/carousel/p6.webp?v=1"
             ]}
             duration={45}
-            cardWidth={isMobile ? "26rem" : "75rem"}
+            cardWidth={isMobile ? "26rem" : isTablet ? "60rem" : "75rem"}
             cardAspectRatio={isMobile ? "16/10" : "16/9"}
-            perspective={isMobile ? "65rem" : "120rem"}
+            perspective={isMobile ? "65rem" : isTablet ? "100rem" : "120rem"}
             withMask={true}
-            containerClassName="w-full h-full"
+            containerClassName="w-full h-full !min-h-0"
             imageClassName="border border-stone-200/20 shadow-[0_20px_50px_rgba(0,0,0,0.15)] select-none pointer-events-none brightness-[1.02] saturate-[1.05]"
           />
         </div>
 
         {/* Labels with active indicator */}
-        <div 
-          className="flex justify-center gap-4 sm:gap-10 md:gap-20 mt-2 md:mt-20 px-4 flex-wrap relative z-10 scroll-reveal"
+        <div
+          className={`flex justify-center gap-4 sm:gap-10 md:gap-20 px-4 flex-wrap relative z-10 scroll-reveal ${isMobile ? 'mt-2' : isTablet ? 'mt-4' : 'mt-20'}`}
           style={{ transitionDelay: '400ms' }}
         >
           {[
-            { tag: "#01", title: "White Label" },
-            { tag: "#02", title: "Results" },
-            { tag: "#03", title: "Route Map" },
-            { tag: "#04", title: "Multisport" },
-            { tag: "#05", title: "Portfolio" },
+            { tag: "#01", title: "Start / Finish" },
+            { tag: "#02", title: "Course Maps" },
+            { tag: "#03", title: "Finish Line" },
+            { tag: "#04", title: "Event Crew" },
+            { tag: "#05", title: "Athletes" },
           ].map((item, idx) => (
             <button
               key={idx}
@@ -245,6 +251,8 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+
+      <ReferenceShowcase />
 
       {/* ===================== SECTION 2: PHOTO GRID (PAUSED) ===================== */}
       {/* Section ini di-pause sementara
@@ -334,7 +342,7 @@ export default function LandingPage() {
 
       {/* ===================== SECTION 4: PRODUCT SHOWCASE ===================== */}
       {/* ===================== SECTION 4: PRODUCT SHOWCASE — APPLE STYLE ===================== */}
-      <section className="bg-white py-20 md:py-28" id="products">
+      <section className="bg-stone-50 py-20 md:py-28" id="products">
         <div className="max-w-7xl mx-auto px-6">
 
           {/* Partnership Editorial Header */}
@@ -356,8 +364,8 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 scroll-reveal">
 
             {/* CARD 1: Large Featured Card (Span 2 columns on desktop) */}
-            <div className="md:col-span-2 bg-white rounded-[32px] p-8 md:p-12 flex flex-col md:flex-row justify-between items-center overflow-hidden shadow-sm border border-stone-200/40 group hover:shadow-md transition-all duration-500 cursor-pointer" onClick={() => navigate('/device/pro-time-decoder')}>
-              <div className="w-full md:w-[55%] flex flex-col justify-start h-full mb-8 md:mb-0 md:pr-8">
+            <div className="md:col-span-2 bg-white rounded-[32px] p-8 md:p-12 flex flex-col md:flex-row justify-between items-center overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-stone-200/60 group hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-500 cursor-pointer" onClick={() => navigate('/device/pro-time-decoder')}>
+              <div className="w-full md:w-[55%] flex flex-col justify-start md:h-full mb-8 md:mb-0 md:pr-8">
                 <div>
                   <span className="text-stone-400 font-extrabold tracking-widest text-[9px] uppercase">CORE SYSTEM</span>
                   <h3 className="text-3xl md:text-4xl font-black uppercase text-stone-900 mt-2 mb-4 leading-none tracking-tight">Pro Time Decoder</h3>
@@ -365,7 +373,7 @@ export default function LandingPage() {
                     Our professional timing hub that decrypts transponder reads with industry-leading precision. Equipped with dual-frequency sync and internal batteries for robust failproof deployment.
                   </p>
                 </div>
-                <div className="mt-8 md:mt-auto pt-8">
+                <div className="mt-4 md:mt-auto md:pt-8">
                   <span className="text-stone-400 font-bold text-xs">Partnered with IZT Tech</span>
                 </div>
               </div>
@@ -373,13 +381,13 @@ export default function LandingPage() {
                 <img
                   src="/Assets/landing2/PRO TIME DECODER.webp"
                   alt="Pro Time Decoder"
-                  className="max-h-full max-w-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-105"
+                  className="max-h-full max-w-full object-contain mix-blend-multiply transition-all duration-700 group-hover:scale-110 group-hover:-rotate-2 group-hover:drop-shadow-[0_20px_20px_rgba(0,0,0,0.15)]"
                 />
               </div>
             </div>
 
             {/* CARD 2: Magic Antenna */}
-            <div className="bg-white rounded-[32px] p-8 md:p-10 flex flex-col justify-between overflow-hidden shadow-sm border border-stone-200/40 group hover:shadow-md transition-all duration-500 cursor-pointer" onClick={() => navigate('/device/magic-antenna')}>
+            <div className="bg-white rounded-[32px] p-8 md:p-10 flex flex-col justify-between overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-stone-200/60 group hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-500 cursor-pointer" onClick={() => navigate('/device/magic-antenna')}>
               <div className="mb-8">
                 <span className="text-stone-400 font-extrabold tracking-widest text-[9px] uppercase">ANTENNA GRID</span>
                 <h3 className="text-2xl md:text-3xl font-black uppercase text-stone-900 mt-2 mb-3 leading-none tracking-tight">Magic Antenna</h3>
@@ -391,13 +399,13 @@ export default function LandingPage() {
                 <img
                   src="/Assets/landing2/MAGIC ANTENNA.webp"
                   alt="Magic Antenna"
-                  className="max-h-full max-w-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-105"
+                  className="max-h-full max-w-full object-contain mix-blend-multiply transition-all duration-700 group-hover:scale-110 group-hover:rotate-1 group-hover:drop-shadow-[0_20px_20px_rgba(0,0,0,0.15)]"
                 />
               </div>
             </div>
 
             {/* CARD 3: Active Chip */}
-            <div className="bg-white rounded-[32px] p-8 md:p-10 flex flex-col justify-between overflow-hidden shadow-sm border border-stone-200/40 group hover:shadow-md transition-all duration-500 cursor-pointer" onClick={() => navigate('/device/active-chip')}>
+            <div className="bg-white rounded-[32px] p-8 md:p-10 flex flex-col justify-between overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-stone-200/60 group hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-500 cursor-pointer" onClick={() => navigate('/device/active-chip')}>
               <div className="mb-8">
                 <span className="text-red-500 font-extrabold tracking-widest text-[9px] uppercase">REUSABLE TAG</span>
                 <h3 className="text-2xl md:text-3xl font-black uppercase text-stone-900 mt-2 mb-3 leading-none tracking-tight">Active Chip</h3>
@@ -409,14 +417,14 @@ export default function LandingPage() {
                 <img
                   src="/Assets/landing2/Active Chip.webp"
                   alt="Active Chip"
-                  className="max-h-full max-w-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-105"
+                  className="max-h-full max-w-full object-contain mix-blend-multiply transition-all duration-700 group-hover:scale-110 group-hover:-rotate-1 group-hover:drop-shadow-[0_20px_20px_rgba(0,0,0,0.15)]"
                 />
               </div>
             </div>
 
             {/* CARD 4: Running Chip (Span 2 columns on desktop) */}
-            <div className="md:col-span-2 bg-white rounded-[32px] p-8 md:p-12 flex flex-col md:flex-row justify-between items-center overflow-hidden shadow-sm border border-stone-200/40 group hover:shadow-md transition-all duration-500 cursor-pointer" onClick={() => navigate('/device/running-chip')}>
-              <div className="w-full md:w-[55%] flex flex-col justify-start h-full mb-8 md:mb-0 md:pr-8">
+            <div className="md:col-span-2 bg-white rounded-[32px] p-8 md:p-12 flex flex-col md:flex-row justify-between items-center overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-stone-200/60 group hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-500 cursor-pointer" onClick={() => navigate('/device/running-chip')}>
+              <div className="w-full md:w-[55%] flex flex-col justify-start md:h-full mb-8 md:mb-0 md:pr-8">
                 <div>
                   <span className="text-stone-400 font-extrabold tracking-widest text-[9px] uppercase">DISPOSABLE TAG</span>
                   <h3 className="text-3xl md:text-4xl font-black uppercase text-stone-900 mt-2 mb-4 leading-none tracking-tight">Running Chip</h3>
@@ -424,7 +432,7 @@ export default function LandingPage() {
                     Ultra-lightweight passive UHF tags optimized for mass-participation marathons. Designed to be attached to bibs, they deliver reliable start/split splits effortlessly.
                   </p>
                 </div>
-                <div className="mt-8 md:mt-auto pt-8">
+                <div className="mt-4 md:mt-auto md:pt-8">
                   <span className="text-stone-400 font-bold text-xs">Standard Passive UHF tag technology</span>
                 </div>
               </div>
@@ -432,7 +440,7 @@ export default function LandingPage() {
                 <img
                   src="/Assets/landing2/RUNNING Chip.webp"
                   alt="Running Chip"
-                  className="max-h-full max-w-full object-contain mix-blend-multiply transition-transform duration-700 group-hover:scale-105"
+                  className="max-h-full max-w-full object-contain mix-blend-multiply transition-all duration-700 group-hover:scale-110 group-hover:rotate-2 group-hover:drop-shadow-[0_20px_20px_rgba(0,0,0,0.15)]"
                 />
               </div>
             </div>
@@ -455,7 +463,7 @@ export default function LandingPage() {
             <p className="text-stone-500 text-[15px] md:text-lg font-medium mb-8 leading-relaxed max-w-sm">
               Find quick solutions and helpful tips for using our timing ecosystem. If you need more details, our technical team is ready to assist.
             </p>
-            <button 
+            <button
               className="landing-btn landing-btn--primary px-8"
               style={{ borderRadius: '9999px' }}
             >

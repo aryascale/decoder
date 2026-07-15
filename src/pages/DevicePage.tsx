@@ -1,6 +1,6 @@
 // src/pages/DevicePage.tsx
 
-import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo, useLayoutEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -22,8 +22,8 @@ interface DeviceInfo {
   name: string;
   heroSubtitle: string;
   image: string;
+  image2: string;
   videoMp4: string;
-  videoWebm: string;
   specs: DeviceSpec[];
   overviewHeading: string;
   overviewBody: string;
@@ -40,9 +40,9 @@ const DEVICES: Record<string, DeviceInfo> = {
     name: "Pro Time Decoder",
     heroSubtitle:
       "The professional timing hub that decrypts transponder reads with industry-leading precision. Dual-frequency sync. Continuous direct power. Zero compromise.",
-    image: "/Assets/landing2/PRO TIME DECODER.webp",
-    videoMp4: "/Assets/Device/decoder.mp4",
-    videoWebm: "/Assets/Device/decoder.webm",
+    image: "/Assets/landing2/Decoder1.png",
+    image2: "/Assets/landing2/Decoder2.png",
+    videoMp4: "/Assets/Device/DecoderAsset1.mp4",
     specs: [
       { value: "0.02s", label: "Timing Accuracy" },
       { value: "2x", label: "Dual-Frequency Sync" },
@@ -91,9 +91,9 @@ const DEVICES: Record<string, DeviceInfo> = {
     name: "Magic Antenna",
     heroSubtitle:
       "Advanced high-gain UHF antenna system ensuring maximum transponder detection density even in packed start and finish zones.",
-    image: "/Assets/landing2/MAGIC ANTENNA.webp",
-    videoMp4: "/Assets/Device/decoder.mp4",
-    videoWebm: "/Assets/Device/decoder.webm",
+    image: "/Assets/landing2/Antene1.png",
+    image2: "/Assets/landing2/Antene2.png",
+    videoMp4: "/Assets/Device/AnteneAsset1.mp4",
     specs: [
       { value: "99.9%", label: "Detection Rate" },
       { value: "8m", label: "Read Range" },
@@ -142,9 +142,9 @@ const DEVICES: Record<string, DeviceInfo> = {
     name: "Active Chip",
     heroSubtitle:
       "Sub-millisecond precision transponder designed for high-speed cycling, triathlons, and professional sports requiring active power backup.",
-    image: "/Assets/landing2/Active Chip.webp",
-    videoMp4: "/Assets/Device/decoder.mp4",
-    videoWebm: "/Assets/Device/decoder.webm",
+    image: "/Assets/landing2/ActiveChip1.png",
+    image2: "/Assets/landing2/ActiveChip2.png",
+    videoMp4: "/Assets/Device/ActiveAsset1.mp4",
     specs: [
       { value: "<1ms", label: "Response Time" },
       { value: "500+", label: "Race Cycles" },
@@ -193,9 +193,9 @@ const DEVICES: Record<string, DeviceInfo> = {
     name: "Running Chip",
     heroSubtitle:
       "Ultra-lightweight passive UHF tags optimized for mass-participation marathons. Attach to bibs. Deliver reliable start and split times effortlessly.",
-    image: "/Assets/landing2/RUNNING Chip.webp",
-    videoMp4: "/Assets/Device/decoder.mp4",
-    videoWebm: "/Assets/Device/decoder.webm",
+    image: "/Assets/landing2/RunningChip2.png",
+    image2: "/Assets/landing2/RunningChip1.png",
+    videoMp4: "/Assets/Device/RunningAsset1.mp4",
     specs: [
       { value: "3g", label: "Ultra-Light Weight" },
       { value: "0.2s", label: "Split Accuracy" },
@@ -271,6 +271,11 @@ export default function DevicePage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [scrollVideoProgress, setScrollVideoProgress] = useState(0);
 
+  // Smooth video scrubbing refs
+  const targetTime = useRef(0);
+  const currentVideoTime = useRef(0);
+  const rafRef = useRef<number>();
+
   // Gallery state
   const galleryRef = useRef<HTMLDivElement>(null);
   const [activeGalleryFrame, setActiveGalleryFrame] = useState(0);
@@ -283,6 +288,28 @@ export default function DevicePage() {
   const device = useMemo(() => (slug ? DEVICES[slug] : undefined), [slug]);
 
   useScrollReveal([slug]);
+
+  // Video interpolation loop
+  useEffect(() => {
+    const updateVideoTime = () => {
+      if (scrollVideoRef.current && scrollVideoRef.current.readyState >= 2 && scrollVideoRef.current.duration) {
+        // Lerp factor (lower = smoother but more delayed)
+        const lerpFactor = 0.08;
+        currentVideoTime.current += (targetTime.current - currentVideoTime.current) * lerpFactor;
+        
+        // Only update if difference is meaningful to save resources
+        if (Math.abs(targetTime.current - currentVideoTime.current) > 0.001) {
+          scrollVideoRef.current.currentTime = currentVideoTime.current;
+        }
+      }
+      rafRef.current = requestAnimationFrame(updateVideoTime);
+    };
+    
+    rafRef.current = requestAnimationFrame(updateVideoTime);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
 
   // Show sticky nav after scrolling past hero + drive scroll video
   const handleScroll = useCallback(() => {
@@ -298,12 +325,8 @@ export default function DevicePage() {
       const progress = Math.max(0, Math.min(1, rawProgress));
       setScrollVideoProgress(progress);
 
-      if (scrollVideoRef.current && scrollVideoRef.current.readyState >= 2) {
-        requestAnimationFrame(() => {
-          if (scrollVideoRef.current && scrollVideoRef.current.duration) {
-            scrollVideoRef.current.currentTime = progress * scrollVideoRef.current.duration;
-          }
-        });
+      if (scrollVideoRef.current && scrollVideoRef.current.duration) {
+        targetTime.current = progress * scrollVideoRef.current.duration;
       }
     }
 
@@ -358,8 +381,10 @@ export default function DevicePage() {
   }, [handleScroll]);
 
   // Scroll to top on mount
-  useEffect(() => {
-    window.scrollTo(0, 0);
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    const timer = setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: "instant" }), 50);
+    return () => clearTimeout(timer);
   }, [slug]);
 
   /* ── 404 ── */
@@ -388,11 +413,34 @@ export default function DevicePage() {
           STICKY NAV — appears after hero scroll
           ═══════════════════════════════════════════ */}
       <nav
-        className={`fixed top-0 inset-x-0 z-90 h-[52px] flex items-center justify-center px-6 bg-black/70 backdrop-blur-2xl backdrop-saturate-[1.8] border-b border-white/8 transition-transform duration-400 ease-[cubic-bezier(0.4,0,0.2,1)] ${showNav ? "translate-y-0" : "-translate-y-full"
+        className={`fixed top-0 inset-x-0 z-[90] h-[52px] flex items-center justify-center px-6 bg-black/70 backdrop-blur-2xl backdrop-saturate-[1.8] border-b border-white/8 transition-transform duration-400 ease-[cubic-bezier(0.4,0,0.2,1)] ${showNav ? "translate-y-0" : "-translate-y-full"
           }`}
       >
-        <div className="max-w-[1120px] w-full flex items-center justify-between max-md:justify-center">
-          <span className="text-sm font-bold tracking-tight">{device.name}</span>
+        <div className="max-w-[1120px] w-full flex items-center justify-between max-md:justify-center relative">
+          {/* Back button in nav (visible when sticky nav is shown) */}
+          <button
+            onClick={() => navigate("/")}
+            className="absolute left-0 max-md:-left-2 text-white/60 hover:text-white transition-colors flex items-center justify-center cursor-pointer md:hidden"
+            aria-label="Back"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate("/")}
+              className="hidden md:flex text-white/60 hover:text-white transition-colors items-center justify-center cursor-pointer"
+              aria-label="Back"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+            <span className="text-sm font-bold tracking-tight">{device.name}</span>
+          </div>
+
           <div className="hidden md:flex items-center gap-7">
             {["Overview", "Specs", "Features"].map((label) => (
               <button
@@ -419,9 +467,9 @@ export default function DevicePage() {
       <motion.button
         onClick={() => navigate("/")}
         initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.8, duration: 0.6 }}
-        className="fixed top-5 left-5 z-[100] flex items-center gap-2 px-5 py-2.5 bg-black/50 backdrop-blur-xl border border-white/10 rounded-full text-[#f5f5f7] text-[13px] font-semibold tracking-wide cursor-pointer hover:bg-white/15 hover:border-white/25 hover:-translate-x-0.5 transition-all duration-300 max-md:top-3 max-md:left-3 max-md:px-4 max-md:py-2 max-md:text-xs"
+        animate={{ opacity: showNav ? 0 : 1, y: showNav ? -10 : 0, x: 0 }}
+        transition={{ delay: showNav ? 0 : 0.8, duration: 0.6 }}
+        className={`fixed top-5 left-5 z-[100] flex items-center gap-2 px-5 py-2.5 bg-black/50 backdrop-blur-xl border border-white/10 rounded-full text-[#f5f5f7] text-[13px] font-semibold tracking-wide cursor-pointer hover:bg-white/15 hover:border-white/25 hover:-translate-x-0.5 transition-all duration-300 max-md:top-3 max-md:left-3 max-md:px-4 max-md:py-2 max-md:text-xs ${showNav ? 'pointer-events-none' : ''}`}
       >
         <svg className="w-4 h-4 transition-transform duration-300 group-hover:-translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
           <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -442,9 +490,9 @@ export default function DevicePage() {
             loop
             playsInline
             preload="auto"
+            poster={device.image}
           >
             <source src={device.videoMp4} type="video/mp4" />
-            <source src={device.videoWebm} type="video/webm" />
           </video>
         </div>
 
@@ -561,7 +609,6 @@ export default function DevicePage() {
               poster={device.image}
             >
               <source src={device.videoMp4} type="video/mp4" />
-              <source src={device.videoWebm} type="video/webm" />
             </video>
           </div>
 
@@ -671,27 +718,38 @@ export default function DevicePage() {
               {device.features.map((feature, idx) => (
                 <div
                   key={idx}
-                  className="gallery-card snap-center shrink-0 w-[1000px] max-w-[85vw] h-[650px] max-md:h-[550px] bg-black rounded-[40px] max-md:rounded-[32px] p-16 max-md:p-10 flex flex-col overflow-hidden relative group border border-white/[0.04]"
+                  className="gallery-card snap-center shrink-0 w-[1000px] max-w-[85vw] h-[600px] max-lg:h-[650px] bg-[#050505] rounded-[48px] max-lg:rounded-[32px] p-0 flex flex-col overflow-hidden relative group border border-white/[0.05] shadow-2xl transition-all duration-700 hover:border-white/[0.15] hover:shadow-[0_0_80px_rgba(220,38,38,0.1)]"
                 >
-                  <div className="relative z-10 max-w-[540px]">
-                    <span className="text-[13px] font-bold tracking-[0.2em] uppercase text-[#a1a1a6] mb-4 block">
-                      {feature.tag}
-                    </span>
-                    <h3 className="text-[clamp(32px,3.5vw,48px)] font-bold tracking-tight leading-[1.1] text-[#f5f5f7] mb-5">
-                      {feature.title}
+                  {/* Huge Background Typography */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] flex items-center justify-center pointer-events-none opacity-20 group-hover:opacity-40 transition-all duration-1000 ease-out group-hover:scale-105 group-hover:rotate-[-2deg]">
+                    <h3 className="text-[160px] max-lg:text-[80px] font-black uppercase text-transparent whitespace-nowrap leading-none" style={{ WebkitTextStroke: '2px rgba(255,255,255,0.4)' }}>
+                      {feature.title} • {feature.title}
                     </h3>
-                    <p className="text-[19px] max-md:text-[17px] text-[#a1a1a6] leading-[1.5]">
-                      {feature.description}
-                    </p>
                   </div>
 
-                  {/* Image Container */}
-                  <div className="absolute bottom-0 left-0 right-0 h-[65%] flex items-end justify-center pb-12 px-12 max-md:px-6">
+                  {/* Floating Image */}
+                  <div className="absolute inset-y-0 right-[-5%] w-[70%] max-lg:relative max-lg:inset-auto max-lg:w-full max-lg:h-[45%] max-lg:mt-6 flex items-center justify-center z-10 transition-transform duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.15] group-hover:-translate-x-8 max-lg:group-hover:-translate-y-2 max-lg:group-hover:-translate-x-0">
                     <img
-                      src={device.image}
+                      src={idx === 0 ? device.image : device.image2}
                       alt={feature.title}
-                      className="w-auto h-full object-contain object-bottom drop-shadow-[0_30px_60px_rgba(0,0,0,0.6)] group-hover:scale-[1.03] transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                      className="w-auto h-[85%] max-lg:h-full object-contain drop-shadow-[0_40px_80px_rgba(0,0,0,0.8)] group-hover:drop-shadow-[0_40px_80px_rgba(220,38,38,0.2)] transition-all duration-700"
                     />
+                  </div>
+
+                  {/* Glassmorphic Content Dock */}
+                  <div className="absolute bottom-10 left-10 w-[48%] max-lg:relative max-lg:bottom-auto max-lg:left-auto max-lg:w-[calc(100%-2rem)] max-lg:mx-auto max-lg:mt-auto max-lg:mb-4 p-10 max-lg:p-6 bg-[#0a0a0a]/70 max-lg:bg-[#0a0a0a]/85 backdrop-blur-2xl rounded-[36px] max-lg:rounded-[24px] border border-white/10 z-20 group-hover:bg-[#0f0f0f]/90 group-hover:-translate-y-3 max-lg:group-hover:-translate-y-1 transition-all duration-700 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+                    <div className="flex items-center gap-3 mb-6 max-lg:mb-4">
+                      <div className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+                      <span className="text-red-500 text-[11px] font-bold tracking-[0.25em] uppercase">
+                        {feature.tag}
+                      </span>
+                    </div>
+                    <h3 className="text-[clamp(28px,2.5vw,40px)] max-lg:text-[24px] font-black tracking-tight leading-[1.05] text-white mb-5 max-lg:mb-3 group-hover:text-red-50 transition-colors duration-500">
+                      {feature.title}
+                    </h3>
+                    <p className="text-[16px] max-lg:text-[14px] text-white/50 leading-relaxed font-medium group-hover:text-white/70 transition-colors duration-500">
+                      {feature.description}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -715,9 +773,14 @@ export default function DevicePage() {
 
           {/* The Text Mask (Foreground) */}
           <div className="absolute inset-0 bg-black text-white mix-blend-multiply pointer-events-none overflow-hidden z-10">
+            <div 
+              className="absolute inset-0 bg-white"
+              style={{ opacity: maskProgress < 0.1 ? 1 : Math.max(0, 1 - (maskProgress - 0.1) * 8) }}
+            />
             <h2
-              className="absolute left-1/2 top-1/2 text-[25vw] max-md:text-[35vw] font-black tracking-tighter whitespace-nowrap"
+              className="absolute left-1/2 top-1/2 font-black tracking-tighter whitespace-nowrap"
               style={{
+                fontSize: `clamp(60px, ${180 / device.name.length}vw, 300px)`,
                 transform: `translate(-50%, -50%) scale(${maskProgress < 0.4
                     ? 1 + Math.pow(1 - maskProgress * 2.5, 4) * 1500
                     : Math.max(0, 1 - (maskProgress - 0.4) * 2.5)
@@ -726,7 +789,7 @@ export default function DevicePage() {
                 opacity: maskProgress > 0.8 ? 0 : 1
               }}
             >
-              Decoder.
+              {device.name}.
             </h2>
           </div>
 

@@ -6,12 +6,17 @@ const NAV_LINKS = [
   { label: "Events", action: "navigate", to: "/event" },
   { label: "iZT Timing Kit", action: "anchor", to: "#products" },
   { label: "Live Results", action: "anchor", to: "#live-results" },
-  { label: "About", action: "anchor", to: "#about" },
+  { label: "About", action: "navigate", to: "/about" },
 ];
 
-export default function LandingNavbar() {
+interface LandingNavbarProps {
+  customLinks?: Array<{ label: string, action: string, to: string }>;
+}
+
+export default function LandingNavbar({ customLinks }: LandingNavbarProps) {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const activeLinks = customLinks || NAV_LINKS;
 
   const handleNav = (link: (typeof NAV_LINKS)[0]) => {
     setIsOpen(false);
@@ -49,7 +54,7 @@ export default function LandingNavbar() {
 
           {/* Center: Desktop Nav Links */}
           <div className="hidden md:flex items-center gap-10 text-[12px] font-medium text-slate-600 tracking-wide">
-            {NAV_LINKS.map((link) => (
+            {activeLinks.map((link) => (
               <button
                 key={link.label}
                 onClick={() => handleNav(link)}
@@ -115,7 +120,7 @@ export default function LandingNavbar() {
 
               {/* Nav Links */}
               <div className="flex flex-col py-4">
-                {NAV_LINKS.map((link, idx) => (
+                {activeLinks.map((link, idx) => (
                   <motion.button
                     key={link.label}
                     initial={{ opacity: 0, x: 20 }}

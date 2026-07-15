@@ -188,8 +188,8 @@ export default function AdminLayout() {
         <div className={`
           ${isMobile ? 'fixed z-50' : ''}
         `}>
-          <AppSidebar 
-            collapsed={isMobile ? false : collapsed} 
+          <AppSidebar
+            collapsed={isMobile ? false : collapsed}
             menuItems={defaultMenuItems}
             onItemClick={handleMobileNavigation}
           />

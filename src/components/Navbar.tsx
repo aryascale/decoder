@@ -15,7 +15,7 @@ export default function Navbar({ showAdminButton = false }: NavbarProps) {
   // AUTH DISABLED: const { user, logout } = useAuth();
   // AUTH DISABLED: const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const isLanding = location.pathname === '/';
+  const isLandingOrEvent = location.pathname === '/' || location.pathname === '/event' || location.pathname === '/leaderboard';
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 40);
@@ -32,11 +32,11 @@ export default function Navbar({ showAdminButton = false }: NavbarProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []); */
 
-  const isTransparent = isLanding && !scrolled && !mobileMenuOpen;
+  const isTransparent = isLandingOrEvent && !scrolled && !mobileMenuOpen;
   // AUTH DISABLED: const initials = user ? ((user as any)?.name || user.username || user.email || '?').charAt(0).toUpperCase() : '';
 
   const navLinks = [
-    { to: '#products', label: 'About' },
+    { to: '/about', label: 'About' },
     { to: '/event', label: 'Events' },
   ];
 
