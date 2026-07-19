@@ -10,7 +10,7 @@ interface FormData {
   latitude: string;
   longitude: string;
   isActive: boolean;
-  categories: string[];
+  categories: { name: string; distanceKm: number | null }[];
 }
 
 export default function CreateEventPage() {
@@ -24,10 +24,11 @@ export default function CreateEventPage() {
     latitude: '',
     longitude: '',
     isActive: true,
-    categories: [...DEFAULT_CATEGORIES] as string[],
+    categories: DEFAULT_CATEGORIES.map(c => ({ name: c, distanceKm: null })),
   });
 
   const [newCategory, setNewCategory] = useState('');
+  const [newCategoryDistance, setNewCategoryDistance] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -42,22 +43,24 @@ export default function CreateEventPage() {
   const handleAddCategory = () => {
     const trimmed = newCategory.trim();
     if (!trimmed) return;
-    if (formData.categories.includes(trimmed)) {
+    if (formData.categories.some(c => c.name === trimmed)) {
       setError('Category already exists');
       return;
     }
+    const distanceKm = parseFloat(newCategoryDistance) || null;
     setFormData(prev => ({
       ...prev,
-      categories: [...prev.categories, trimmed],
+      categories: [...prev.categories, { name: trimmed, distanceKm }],
     }));
     setNewCategory('');
+    setNewCategoryDistance('');
     setError('');
   };
 
   const handleRemoveCategory = (category: string) => {
     setFormData(prev => ({
       ...prev,
-      categories: prev.categories.filter(c => c !== category),
+      categories: prev.categories.filter(c => c.name !== category),
     }));
   };
 
@@ -234,10 +237,19 @@ export default function CreateEventPage() {
             <div className="category-input">
               <input
                 type="text"
+                className="input"
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCategory())}
                 placeholder="e.g., 10K Laki-laki"
+              />
+              <input
+                type="number"
+                step="0.001"
+                className="input"
+                value={newCategoryDistance}
+                onChange={(e) => setNewCategoryDistance(e.target.value)}
+                placeholder="Jarak (km) opsional"
               />
               <button
                 type="button"
@@ -250,11 +262,14 @@ export default function CreateEventPage() {
 
             <div className="categories-list">
               {formData.categories.map((category) => (
-                <div key={category} className="category-item">
-                  <span className="category-name">{category}</span>
+                <div key={category.name} className="category-item flex justify-between items-center bg-white/10 p-3 rounded-lg mb-2">
+                  <div className="flex gap-4 items-center">
+                    <span className="category-name font-bold text-lg">{category.name}</span>
+                    {category.distanceKm && <span className="text-sm bg-purple-600 px-2 py-0.5 rounded text-white">{category.distanceKm} km</span>}
+                  </div>
                   <button
                     type="button"
-                    onClick={() => handleRemoveCategory(category)}
+                    onClick={() => handleRemoveCategory(category.name)}
                     className="btn-remove"
                   >
                     ×

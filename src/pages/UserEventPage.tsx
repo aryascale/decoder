@@ -109,17 +109,29 @@ export default function UserEventPage() {
       e.name.toLowerCase().includes(search.toLowerCase()) ||
       (e.location || "").toLowerCase().includes(search.toLowerCase());
 
-    const matchesCategory =
-      activeCategory === "All Events" ||
-      (e.categories && e.categories.includes(activeCategory));
+    let matchesCategory = false;
+    if (activeCategory === "All Events") {
+      matchesCategory = true;
+    } else if (activeCategory === "Running") {
+      matchesCategory = e.categories?.some(c => {
+        const lower = c.toLowerCase();
+        return lower.includes('run') || lower.includes('marathon') || lower.endsWith('k') || lower.includes('ultra');
+      }) ?? false;
+    } else if (activeCategory === "Cycling") {
+      matchesCategory = e.categories?.some(c => {
+        const lower = c.toLowerCase();
+        return lower.includes('cycl') || lower.includes('ride') || lower.includes('fondo') || lower.includes('bike');
+      }) ?? false;
+    }
 
     return matchesSearch && matchesCategory;
   });
 
-  // Extract unique categories dynamically
+  // Fixed Event Types instead of extracting categories
   const categoriesList = [
     "All Events",
-    ...Array.from(new Set(events.flatMap((e) => e.categories || [])))
+    "Running",
+    "Cycling"
   ];
 
   // Upcoming events for the slider
@@ -167,7 +179,7 @@ export default function UserEventPage() {
 
   return (
     <>
-      <LandingNavbar customLinks={customNavLinks} />
+      <LandingNavbar customLinks={customNavLinks} isDarkBg={true} />
       <div className="min-h-screen bg-[#F1F3F6]">
 
         {/* ================= HERO HEADER BANNER ================= */}
@@ -537,7 +549,7 @@ export default function UserEventPage() {
         {/* ===================== EVENT STATS BANNER ================ */}
         {/* ======================================================== */}
         <div className="relative -mb-16 md:-mb-14 z-10 max-w-6xl mx-auto px-4 mt-20 md:mt-28">
-          <div className="rounded-[28px] md:rounded-[36px] bg-gradient-to-r from-slate-950 via-[#0B1220] to-slate-950 p-6 md:p-10 shadow-2xl border border-slate-800/60 flex flex-col md:flex-row gap-6 justify-around items-center text-center">
+          <div className="rounded-[28px] md:rounded-[36px] bg-gradient-to-r from-slate-950 via-[#0B1220] to-slate-950 p-6 md:p-10 shadow-2xl border border-slate-800/60 grid grid-cols-2 md:flex md:flex-row gap-8 md:gap-6 justify-around items-center text-center">
 
             {/* Stat 1: Total Events */}
             <div className="flex flex-col items-center gap-1">

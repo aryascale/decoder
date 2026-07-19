@@ -94,7 +94,7 @@ export function useLiveTiming(eventId: string) {
     if (socketRef.current) {
       socketRef.current.disconnect();
     }
-    const newSocket = io({ path: "/socket.io/" });
+    const newSocket = io({ path: "/socket.io/", transports: ['websocket'] });
 
     newSocket.on(`new_record_${eventId}`, (data: any) => {
       setRecordsByEpc(prev => {

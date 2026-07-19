@@ -36,7 +36,7 @@ export default function Navbar({ showAdminButton = false }: NavbarProps) {
   // AUTH DISABLED: const initials = user ? ((user as any)?.name || user.username || user.email || '?').charAt(0).toUpperCase() : '';
 
   const navLinks = [
-    { to: '/about', label: 'About' },
+    { to: '#products', label: 'About' },
     { to: '/event', label: 'Events' },
   ];
 

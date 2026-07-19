@@ -102,7 +102,39 @@ export default function OverviewPageWrapper() {
 
         master.all.forEach((p) => {
           const finishEntry = finishMap.get(p.epc);
-          if (!finishEntry?.ms) return;
+          if (!finishEntry?.ms) {
+            const catKey = p.sourceCategoryKey;
+            const absMs = absOverrideMs[catKey] ?? null;
+            const startEntry = startMap.get(p.epc);
+            
+            let hasStarted = false;
+            let startTimeStr = "-";
+            if (absMs != null && Number.isFinite(absMs)) {
+              hasStarted = true;
+              startTimeStr = extractTimeOfDay(new Date(absMs).toISOString());
+            } else if (startEntry?.ms) {
+              hasStarted = true;
+              startTimeStr = extractTimeOfDay(startEntry.raw);
+            }
+            
+            if (hasStarted) {
+               baseRows.push({
+                  rank: null,
+                  bib: p.bib,
+                  name: p.name,
+                  gender: p.gender,
+                  category: p.category || p.sourceCategoryKey,
+                  sourceCategoryKey: p.sourceCategoryKey,
+                  finishTimeRaw: "-",
+                  startTimeRaw: startTimeStr,
+                  totalTimeMs: 0,
+                  totalTimeDisplay: "Active",
+                  epc: p.epc,
+                  penaltyMs: penaltyMap.get(p.epc) || 0,
+               });
+            }
+            return;
+          }
 
           const catKey = p.sourceCategoryKey;
           const absMs = absOverrideMs[catKey] ?? null;

@@ -21,6 +21,7 @@ model Event {
   status             String              @default("upcoming")
   isActive           Boolean             @default(true)
   cutoffMs           Int?
+  timezoneOffset     Int                 @default(7)
   categoryStartTimes Json?
   manualStartTime    DateTime?
   logoUrl            String?
@@ -54,6 +55,8 @@ model Category {
   price         Int                 @default(0)
   quota         Int                 @default(0)
   isHidden      Boolean             @default(false)
+  isClosed      Boolean             @default(false)
+  distanceKm    Float?
   event         Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
   registrations EventRegistration[]
 
@@ -225,6 +228,8 @@ model RunnerStatus {
   epc       String
   bib       String?
   isDQ      Boolean  @default(false)
+  isDNS     Boolean  @default(false)
+  isDNF     Boolean  @default(false)
   isHidden  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

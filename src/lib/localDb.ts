@@ -55,6 +55,7 @@ interface StoredCategory {
   name: string;
   eventId: string;
   order: number;
+  distanceKm?: number | null;
   createdAt: string;
 }
 

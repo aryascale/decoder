@@ -5,6 +5,21 @@ import AboutNavbar from "../components/landing/AboutNavbar";
 export default function AboutPage() {
   const [liveSync, setLiveSync] = useState(true);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [heroIndex, setHeroIndex] = useState(0);
+
+  const heroImages = [
+    "/Assets/About/bct1.JPG",
+    "/Assets/About/bct2.JPG",
+    "/Assets/About/bct3.jpg"
+  ];
+
+  // Rotate hero images
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHeroIndex((prev) => (prev + 1) % heroImages.length);
+    }, 4500);
+    return () => clearInterval(timer);
+  }, [heroImages.length]);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -16,13 +31,13 @@ export default function AboutPage() {
       badge: "Registration",
       title: "Online Registration & Payments",
       desc: "Fully custom branding registration portals with multi-payment verification, group checkout, and real-time racer database management.",
-      image: "/Assets/landing2/White Label Website.png"
+      image: "/Assets/landing2/Registrasi.png"
     },
     {
       badge: "Timing Hardware",
       title: "Professional Timing Lineup",
       desc: "High-performance UHF active and passive transponders, decoder units, and high-gain antenna grids designed for 100% mat coverage.",
-      image: "/Assets/landing2/PRO TIME DECODER.webp"
+      image: "/Assets/landing2/Decoder2.png"
     },
     {
       badge: "Live Results",
@@ -79,12 +94,17 @@ export default function AboutPage() {
         >
           {/* Background image & gradient overlay */}
           <div className="absolute inset-0 z-0">
-            <img
-              src="/Assets/landing/hero.webp"
-              alt="Lumpat Timing System Hero"
-              className="w-full h-full object-cover object-center scale-100"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/25" />
+            {heroImages.map((src, idx) => (
+              <img
+                key={src}
+                src={src}
+                alt="Lumpat Timing System Hero"
+                className={`absolute inset-0 w-full h-full object-cover object-center scale-105 transition-all duration-[2000ms] ease-in-out ${
+                  idx === heroIndex ? "opacity-100 z-10" : "opacity-0 z-0"
+                }`}
+              />
+            ))}
+            <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/80 via-black/35 to-black/25" />
           </div>
 
           {/* Top layout */}
@@ -134,14 +154,8 @@ export default function AboutPage() {
 
             {/* Right side: Social channels */}
             <div className="flex gap-5 text-[10px] font-medium text-slate-300 tracking-wider">
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="hover:text-white transition-colors flex items-center gap-0.5">
+              <a href="https://www.instagram.com/lumpat.online/" target="_blank" rel="noreferrer" className="hover:text-white transition-colors flex items-center gap-0.5">
                 Instagram <span className="text-[8px] text-slate-400">↗</span>
-              </a>
-              <a href="https://telegram.org" target="_blank" rel="noreferrer" className="hover:text-white transition-colors flex items-center gap-0.5">
-                Telegram <span className="text-[8px] text-slate-400">↗</span>
-              </a>
-              <a href="mailto:info@lumpat.com" className="hover:text-white transition-colors flex items-center gap-0.5">
-                Email <span className="text-[8px] text-slate-400">↗</span>
               </a>
             </div>
           </div>
@@ -224,8 +238,8 @@ export default function AboutPage() {
             {/* Background image container */}
             <div className="absolute inset-0 z-0 overflow-hidden">
               <img
-                src="/Assets/landing/bike.webp"
-                alt="Triathlon timing mat"
+                src="/Assets/About/bct3.jpg"
+                alt="Trail running timing"
                 className="w-full h-full object-cover scale-100 group-hover:scale-105 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -234,7 +248,7 @@ export default function AboutPage() {
             {/* Overlay capsule */}
             <div className="relative z-10 w-full flex justify-center">
               <span className="backdrop-blur-md bg-white/10 border border-white/20 text-white font-medium text-xs tracking-wider px-5 py-2.5 rounded-full shadow-md text-center block w-fit">
-                Triathlon & Multisport Splits
+                Trail Running & Road Races
               </span>
             </div>
           </motion.div>
@@ -418,16 +432,16 @@ export default function AboutPage() {
             className="h-20 md:h-24 w-auto object-contain mb-8"
           />
           <h2 className="text-2xl md:text-[38px] font-normal tracking-tight text-slate-900 leading-none uppercase mb-6 font-outfit font-medium">
-            Mulai Langkah Besar Anda.
+            Take Your Next Big Step.
           </h2>
           <p className="text-xs md:text-sm text-slate-500 font-light max-w-lg mb-10 leading-relaxed">
-            Kombinasikan teknologi pendaftaran dan timing terbaik untuk menghadirkan pengalaman event profesional yang mengesankan bagi seluruh atlet Anda.
+            Combine the best registration and timing technology to deliver an unforgettable, professional event experience for all your athletes.
           </p>
           <a
             href="/event"
             className="inline-block bg-[#0F172A] hover:bg-black text-white text-xs font-medium tracking-wide px-8 py-4 rounded-full shadow-md hover:scale-105 transition-all duration-300"
           >
-            Jelajahi Platform Lumpat
+            Explore Lumpat Platform
           </a>
         </motion.div>
       </section>

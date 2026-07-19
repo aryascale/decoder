@@ -16,6 +16,7 @@ export function exportLeaderboardCSV(rows: LeaderRow[], filename: string) {
     "Gender",
     "Kategori",
     "Kategori Usia",
+    "Start Time",
     "Finish Time",
     "Total Time"
   ];
@@ -30,6 +31,7 @@ export function exportLeaderboardCSV(rows: LeaderRow[], filename: string) {
         r.gender,
         r.category,
         r.ageCategory || "-",
+        r.startTimeRaw,
         r.finishTimeRaw,
         r.totalTimeDisplay
       ].map(esc).join(",")

@@ -27,7 +27,7 @@ export default async function handler(event: any) {
         [eventId]
       );
       const soldMap = new Map(soldCounts.map((s: any) => [s.categoryId, Number(s.sold)]));
-      return successResponse({ categories: categories.map((c: any) => ({ id: c.id, name: c.name, price: c.price || 0, quota: c.quota || 0, sold: soldMap.get(c.id) || 0, order: c.order, isHidden: !!c.isHidden })) });
+      return successResponse({ categories: categories.map((c: any) => ({ id: c.id, name: c.name, price: c.price || 0, quota: c.quota || 0, sold: soldMap.get(c.id) || 0, order: c.order, isHidden: !!c.isHidden, isClosed: !!c.isClosed, distanceKm: c.distanceKm ?? null })) });
     }
 
     if (event.httpMethod === 'POST' || event.httpMethod === 'PUT') {
@@ -60,15 +60,17 @@ export default async function handler(event: any) {
 
       // Upsert categories
       for (let i = 0; i < categories.length; i++) {
-        const cat = typeof categories[i] === 'string' ? { name: categories[i], price: 0, quota: 0, isHidden: false } : categories[i];
+        const cat = typeof categories[i] === 'string' ? { name: categories[i], price: 0, quota: 0, isHidden: false, isClosed: false, distanceKm: null } : categories[i];
         const isHiddenVal = cat.isHidden ? 1 : 0;
+        const isClosedVal = cat.isClosed ? 1 : 0;
+        const distanceKmVal = cat.distanceKm != null && cat.distanceKm > 0 ? cat.distanceKm : null;
         const existing = existingMap.get(cat.name) as any;
         if (existing) {
-          await query('UPDATE Category SET `order` = ?, price = ?, quota = ?, isHidden = ?, name = ? WHERE id = ?', [i, cat.price || 0, cat.quota || 0, isHiddenVal, cat.name, existing.id]);
+          await query('UPDATE Category SET `order` = ?, price = ?, quota = ?, isHidden = ?, isClosed = ?, distanceKm = ?, name = ? WHERE id = ?', [i, cat.price || 0, cat.quota || 0, isHiddenVal, isClosedVal, distanceKmVal, cat.name, existing.id]);
         } else {
           await query(
-            'INSERT INTO Category (id, name, eventId, `order`, price, quota, isHidden, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
-            [crypto.randomUUID(), cat.name, eventId, i, cat.price || 0, cat.quota || 0, isHiddenVal]
+            'INSERT INTO Category (id, name, eventId, `order`, price, quota, isHidden, isClosed, distanceKm, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())',
+            [crypto.randomUUID(), cat.name, eventId, i, cat.price || 0, cat.quota || 0, isHiddenVal, isClosedVal, distanceKmVal]
           );
         }
       }
@@ -88,7 +90,7 @@ export default async function handler(event: any) {
       await logActivity('event.update_categories', `Update kategori untuk event ${eventId}`, 'admin', eventId);
       try { await createBackup('category_update'); } catch (e) { console.error('[BACKUP] Failed:', e); }
 
-      return successResponse({ categories: updated.map((c: any) => ({ id: c.id, name: c.name, price: c.price || 0, quota: c.quota || 0, sold: soldMap.get(c.id) || 0, order: c.order, isHidden: !!c.isHidden })) });
+      return successResponse({ categories: updated.map((c: any) => ({ id: c.id, name: c.name, price: c.price || 0, quota: c.quota || 0, sold: soldMap.get(c.id) || 0, order: c.order, isHidden: !!c.isHidden, isClosed: !!c.isClosed, distanceKm: c.distanceKm ?? null })) });
     }
 
     if (event.httpMethod === 'DELETE') {

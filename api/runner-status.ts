@@ -12,7 +12,7 @@ export default async function handler(event: any) {
 
     if (event.httpMethod === 'GET') {
       const statuses: any = await query(
-        'SELECT id, eventId, epc, bib, isDQ, isHidden, createdAt FROM RunnerStatus WHERE eventId = ?',
+        'SELECT id, eventId, epc, bib, isDQ, isDNS, isDNF, isHidden, createdAt FROM RunnerStatus WHERE eventId = ?',
         [eventId]
       );
       return successResponse(statuses);
@@ -22,7 +22,7 @@ export default async function handler(event: any) {
       const body = parseBody(event);
       if (!body) return errorResponse('Missing request body', 400);
 
-      const { epc, bib, isDQ = false, isHidden = false } = body;
+      const { epc, bib, isDQ = false, isDNS = false, isDNF = false, isHidden = false } = body;
       eventId = eventId || body.eventId;
 
       if (!eventId) return errorResponse('eventId is required', 400);
@@ -35,19 +35,19 @@ export default async function handler(event: any) {
 
       if (existing.length > 0) {
         await query(
-          'UPDATE RunnerStatus SET bib = ?, isDQ = ?, isHidden = ?, updatedAt = NOW() WHERE eventId = ? AND epc = ?',
-          [bib || null, isDQ, isHidden, eventId, epc]
+          'UPDATE RunnerStatus SET bib = ?, isDQ = ?, isDNS = ?, isDNF = ?, isHidden = ?, updatedAt = NOW() WHERE eventId = ? AND epc = ?',
+          [bib || null, isDQ, isDNS, isDNF, isHidden, eventId, epc]
         );
       } else {
         const id = crypto.randomUUID();
         await query(
-          'INSERT INTO RunnerStatus (id, eventId, epc, bib, isDQ, isHidden, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())',
-          [id, eventId, epc, bib || null, isDQ, isHidden]
+          'INSERT INTO RunnerStatus (id, eventId, epc, bib, isDQ, isDNS, isDNF, isHidden, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
+          [id, eventId, epc, bib || null, isDQ, isDNS, isDNF, isHidden]
         );
       }
 
       const updated: any = await query(
-        'SELECT id, eventId, epc, bib, isDQ, isHidden, createdAt FROM RunnerStatus WHERE eventId = ? AND epc = ? LIMIT 1',
+        'SELECT id, eventId, epc, bib, isDQ, isDNS, isDNF, isHidden, createdAt FROM RunnerStatus WHERE eventId = ? AND epc = ? LIMIT 1',
         [eventId, epc]
       );
 

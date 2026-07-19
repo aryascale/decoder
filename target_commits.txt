@@ -1,0 +1,63 @@
+9fc01225adf66f474092c14525a7b564bb5f021f stagging
+de0c7c6bba78a51b58e747a3f3630b25269e3cd3 chore: add staging env dummy and docker-compose for staging
+1e273a02e8d71a2747d91949d7226aebde996175 fix: explicit any[] return type in query to fix TS2322
+34499cefa0a36676797e6406eae761f663e15229 feat: auto detect eventId from active event in decoder-sync
+bde4e677479d068c3fb05f006898443b73be3299 feat: Implement per-BIB manual start time override
+8d42f2eb86da92453c3dab9f4aac22d3064a3b9a feat: add staging deployment script
+a3a77de6c597a0044e46db020c143abbf32bcb3f fix: Restore global manual start API and isolate per-BIB to its own route
+349f797b154687d7d5775bbfe93b71c9eb69c21a fix: Update helper text on global manual start UI
+8302f89f700081df25985e90d055bcd083ae2692 style: remove helper text from global manual start UI
+bf990e41e8adf4b63567cdc583808e2ece75f4f0 feat: Add per-BIB manual start UI and fix global manual start DB schema
+42dabd7f94b68e319215a30893265e9d4d94ef6b fix: reference error mergedRows is not defined in EventDetailPage
+d95223e1fe56704d2790a6f21389ecfb62911bfc fix: Parse manualStartTime into Date object to avoid MySQL Incorrect datetime value error
+da5465118289022bca84baaeed9b6a26ed09969c style: Remove blue styling from Global Manual Start
+7eac7cc668fbeacea3c263e91fdbec0ff92fcc19 feat: show global time in bib table and fix start now formatting
+c171fccdc511d0dad704000f7e28aec6bbf1432c feat: improve manual start time input UI
+e7c4c49be564c222c0c7bb12d7f22054adc86b26 feat: one-click browser time capture for manual start and support DD:MM:YYYY timestamp formats
+e833964fb91c1f26a39e39493d732c57a7544c21 style: remove badges from manual start table cells
+22fd748a683c82526953dcc063ef90c4dc5f96bc fix: leaderboard table column grid misalignment
+c5bc0f22f05fcfd31d525756d916c5980a5f5300 feat: add Start Time column to leaderboard table
+3a0b95394fcca42f4447bb26025c2572b7308a20 fix: include manualStartTime in events API response - root cause of missing start time
+cedcfebfb0e96e5b847b29af10dea6d1a958eb43 fix: pass eventData.manualStartTime to LeaderboardPage and show Start Time on mobile cards
+212492d8312dcd904e502c14986b478a3abcc200 fix: use inline style for gridTemplateColumns to prevent Tailwind dynamic class purging
+2aba2fe483b0ae87bd104235a7e9eb326793fd8e fix: allow negative race times, add start time to participant modal
+a777d048c47f4a2776ca9db9ca03e51bed928778 Fix : Real tIme timing related adjustment
+a33fe407a506840604a028e5e538582f3f0d082d fix: restore start/finish columns and negative race times after refactor
+0b7e984a69d2762839fbb8d047e3fe671d205454 fix: increase race time column width to prevent overlap for large negative durations
+658f96e66dbc44ac0c66dd24f31cbef34d45398a fix: restructure desktop table layout - move start/finish/race time to outer block, cap absurd durations at 100h
+bc5e14b17421e6272f30263a6e5741e93137f838 fix: match desktop table layout to original clean design - single Time of Day column + Race Time pill
+7e92a15b2a939bd1ae12cacaf8c32d9b5d796c13 fix: make desktop table responsive - shrink grid cols, widen race time pill, auto-size text for long values
+c9f9522db6dfb3a12a9ed4f7d8d1c3e8e43031bb fix: wrap entire row in card container so border/background applies to race time pill
+8a74939b8354a07e782d788762c56119d059eb4c feat: unified card layout with pace calculation
+26f71fad155d4bf29b3d48f2d128666223b925ed fix: negative duration on midnight crossing and add Pace to Modal and Certificate
+2e928339482b527e3fb9197aa2c4abff4a9e93e1 style: change bottom bar colors to match user request
+c5cdf928a39af277117c2feef1688f89b631eb69 style: change top 10 card to white glassmorphism and add BIB label
+35798d7174439bdeb8f6d7edb38251dc1aab89b2 fix: massive negative total duration and improve card UI/UX
+3fe59c0d9b5971e7e995d61c34a68a3aeaac7a8d fix: resolve TS errors and ensure calculation logic is bulletproof
+bfaca304095db93cb69e781d48d0b625ba14b5d5 feat: implement manual finish functionality and fix UI alignment
+2268c55b3232a5d93a86f80b864b316d9e84fef5 fix: time extraction regex and cache API fetches in leaderboard
+28eb94144a0846612322bc573155d9465e8d61d5 style: align race time to the left
+1cc332c52abb0e63fba7c1205f218fdd386758ea style: move race time back to the right but keep internal alignment
+ef8ca8d30f757cfe044044593617bb1547245bcf fix: apply manual finish logic to public event page
+67a24866ce585d4896906707938a3ade03688e4a fix: prevent timezone shift for manual start times
+06ef0318fe7c8b715e75427f710e703a7ba7d1f4 fix: average pace rounding logic
+6d1835c5e6ae3ab533cd965c56d5fcec132edb4c Add : Device Page to showcase device details also Updated Landing
+4e742ac458d87d3815f7c701cccb96b0ac58fcf6 redesign: leaderboard with champion cards + table rows like reference
+5795af570db9753a7981f63a3dc73cb131825e60 style: restore old podium + sharp table rows like reference
+2fdb5c4dbd563f959528faaefdba55682568007a style: larger desktop width, prevent mobile bleed, premium category header
+9c1ade665e72c064c6a38ef86f78290fe93377d0 style: remove displaying count text and left border color on top 3 rows
+c814c1749229b83997435391efcae8f8f0b5bb55 style: compact participant detail modal to prevent mobile bleed
+ff80ca440258a913ebd74cd631068d801eb664de style: change table rows to distinctly separated floating cards like ref image 2
+a920b198459c7114fbb6fd7702355f823c304cce Add : DB add in event for Laps mode, and change in runnercords
+874bae71810b6e2c2dc54e495293743b64957a9a Add : add loop mode in ui also be logic
+104b99dfaa7aae0966472c516bea56372aba8bdb Add : Loop mode logic
+7666c97e16b9f74ca3ed8ce25e2d1ed0c3a935b9 Add : TIme logic, Loop mode Ui, also Event ID field
+e37e28eddb30e7b2c09d3a38525c08f7ba2399f3 Fix : Leaderboard Page Logic to adjusting with live timing regular and laps mode
+0abce0b1b06e841e6243284dd15a033dd50e0de6 Fix : Timezone conversion
+1ae208176790c781d5270b43a2370a976709ec41 Fix : Public Results fix
+b99486cab80db9076a847ee4ac875cc083d2209d Fix : Timing API Bug Issues
+930bb0da473cf4c72f959b46e32b22de8aa93757 Fix : Event page results logic
+e02d2ad1d8fc612ba88fd0d4cd75a73a28b251f4 fix: responsive layout and compact design for mobile leaderboard
+0abfac1c1dd4d6f3cbcd3645a8d076f94b51ef82 Fix : Loop mode minimal time can 0, Public result just see start, cp, and finish etc
+a676c42134be1e92c4763c0bb42d0a06a2c576fd Fix : Loop mode 0 minimal time
+2a09afaca40648d2c353bdf8d490168e21dd7e08 Fix : Change from single api hit to bulk api hit with max 250 items per hit

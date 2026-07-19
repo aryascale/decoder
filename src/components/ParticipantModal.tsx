@@ -24,6 +24,7 @@ type Props = {
     genderRank: number | null;
     categoryRank: number | null;
     ageRank: number | null;
+    distanceKm?: number | null;
   } | null;
 };
 
@@ -62,7 +63,7 @@ export default function ParticipantModal({ open, onClose, eventId, eventName, da
         ageCategory: data.ageCategory,
         finishTime: data.finishTimeRaw,
         totalTimeDisplay: data.totalTimeDisplay,
-        pace: data.totalTimeMs ? calculatePace(data.totalTimeMs, data.category) : undefined,
+        pace: data.totalTimeMs ? calculatePace(data.totalTimeMs, data.category, data.distanceKm) : undefined,
         overallRank: data.overallRank,
         genderRank: data.genderRank,
         categoryRank: data.categoryRank,
@@ -170,7 +171,7 @@ export default function ParticipantModal({ open, onClose, eventId, eventName, da
                 <div className="text-right">
                   <div className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Avg Pace</div>
                   <div className="font-mono font-bold text-yellow-400 text-sm sm:text-base">
-                    {data.totalTimeMs ? calculatePace(data.totalTimeMs, data.category) : "--:--"} /km
+                    {data.totalTimeMs ? calculatePace(data.totalTimeMs, data.category, data.distanceKm) : "--:--"} /km
                   </div>
                 </div>
               </div>

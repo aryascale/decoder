@@ -13,6 +13,7 @@ import ManualStartBibPage from "./ManualStartBibPage";
 import ManualFinishBibPage from "./ManualFinishBibPage";
 import CheckpointsPage from "./CheckpointsPage";
 import AdminLiveTrackingTab from '../tabs/AdminLiveTrackingTab';
+import { Eye, EyeOff, Lock, Unlock, ArrowUp, ArrowDown, ChevronsUp, Trash2 } from 'lucide-react';
 
 interface EventDetailPageProps {
   eventId: string;
@@ -44,7 +45,7 @@ function formatNowAsTimestamp(): string {
 }
 
 export default function EventDetailPage({ eventId, eventSlug, eventName, onBack }: EventDetailPageProps) {
-  const [activeTab, setActiveTab] = useState<'homepage' | 'data' | 'live_data' | 'banners' | 'gallery' | 'categories' | 'route' | 'timing' | 'manual_start' | 'manual_finish' | 'dq' | 'penalty' | 'certified' | 'settings' | 'registration' | 'inventory' | 'checkpoints'>(() => {
+  const [activeTab, setActiveTab] = useState<'homepage' | 'data' | 'live_data' | 'banners' | 'gallery' | 'categories' | 'route' | 'timing' | 'manual_start' | 'manual_finish' | 'dq' | 'dns' | 'dnf' | 'penalty' | 'certified' | 'settings' | 'registration' | 'inventory' | 'checkpoints'>(() => {
     return (localStorage.getItem(`admin_tab_${eventId}`) as any) || 'homepage';
   });
 
@@ -54,7 +55,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
   const [participants, setParticipants] = useState<any[]>([]);
   const [csvMeta, setCsvMeta] = useState<Array<{ key: CsvKind; filename: string; updatedAt: number; rows: number }>>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
-  const [categories, setCategories] = useState<Array<{ id?: string; name: string; price: number; quota: number; isHidden?: boolean; sold?: number }>>([]);
+  const [categories, setCategories] = useState<Array<{ id?: string; name: string; price: number; quota: number; isHidden?: boolean; isClosed?: boolean; sold?: number; distanceKm?: number | null }>>([]);
   const [loading, setLoading] = useState(true);
 
   const [bannerFile, setBannerFile] = useState<File | null>(null);
@@ -78,6 +79,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
   const [newCategory, setNewCategory] = useState('');
   const [newCategoryPrice, setNewCategoryPrice] = useState('');
   const [newCategoryQuota, setNewCategoryQuota] = useState('');
+  const [newCategoryDistance, setNewCategoryDistance] = useState('');
 
 
 
@@ -109,6 +111,10 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
   const [allRows, setAllRows] = useState<LeaderRow[]>([]);
   const [dqSearch, setDqSearch] = useState("");
   const [dqMap, setDqMap] = useState<Record<string, boolean>>({});
+  const [dnsSearch, setDnsSearch] = useState("");
+  const [dnsMap, setDnsMap] = useState<Record<string, boolean>>({});
+  const [dnfSearch, setDnfSearch] = useState("");
+  const [dnfMap, setDnfMap] = useState<Record<string, boolean>>({});
   const [hiddenMap, setHiddenMap] = useState<Record<string, boolean>>({});
   const [eventData, setEventData] = useState<any>(null);
 
@@ -124,7 +130,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
 
   // Load DQ data when switching to DQ tab
   useEffect(() => {
-    if (activeTab === 'dq' || activeTab === 'penalty') {
+    if (activeTab === 'dq' || activeTab === 'penalty' || activeTab === 'dns' || activeTab === 'dnf') {
       loadDQData();
     }
     if (activeTab === 'certified') {
@@ -150,7 +156,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
       const catRes = await fetch(`/api/categories?eventId=${eventId}`);
       if (catRes.ok) {
         const data = await catRes.json();
-        const cats = (data.categories || []).map((c: any) => typeof c === 'string' ? { name: c, price: 0, quota: 0, isHidden: false } : { id: c.id, name: c.name, price: c.price || 0, quota: c.quota || 0, isHidden: !!c.isHidden, sold: c.sold || 0 });
+        const cats = (data.categories || []).map((c: any) => typeof c === 'string' ? { name: c, price: 0, quota: 0, isHidden: false, distanceKm: null } : { id: c.id, name: c.name, price: c.price || 0, quota: c.quota || 0, isHidden: !!c.isHidden, sold: c.sold || 0, distanceKm: c.distanceKm ?? null });
         setCategories(cats);
       }
 
@@ -236,6 +242,8 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
 
       // Load runner status map from API
       let dqData: Record<string, boolean> = {};
+      let dnsData: Record<string, boolean> = {};
+      let dnfData: Record<string, boolean> = {};
       let hiddenData: Record<string, boolean> = {};
       try {
         const res = await fetch(`/api/runner-status?eventId=${eventId}`);
@@ -244,6 +252,8 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
           if (Array.isArray(data)) {
             data.forEach((s: any) => {
               if (s.isDQ) dqData[s.epc] = true;
+              if (s.isDNS) dnsData[s.epc] = true;
+              if (s.isDNF) dnfData[s.epc] = true;
               if (s.isHidden) hiddenData[s.epc] = true;
             });
           }
@@ -252,6 +262,8 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
         console.error("Failed to load runner status:", e);
       }
       setDqMap(dqData);
+      setDnsMap(dnsData);
+      setDnfMap(dnfData);
       setHiddenMap(hiddenData);
 
       const absOverrideMs: Record<string, number | null> = {};
@@ -297,49 +309,46 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
 
       master.all.forEach((p) => {
         const finishEntry = finishMap.get(p.epc);
-        if (!finishEntry?.ms) return;
-
         const catKey = p.sourceCategoryKey;
         const absMs = absOverrideMs[catKey] ?? null;
         const timeOnly = timeOnlyStr[catKey] ?? null;
 
         let total: number | null = null;
 
-        if (absMs != null && Number.isFinite(absMs)) {
-          const delta = finishEntry.ms - absMs;
-          if (Number.isFinite(delta) && delta >= 0) {
-            total = delta;
-          } else {
-            const startEntry = startMap.get(p.epc);
-            if (!startEntry?.ms) return;
-            total = finishEntry.ms - startEntry.ms;
-          }
-        } else if (timeOnly) {
-          const builtOverride = buildOverrideFromFinishDate(finishEntry.ms, timeOnly);
-          if (builtOverride != null) {
-            const delta = finishEntry.ms - builtOverride;
+        if (finishEntry?.ms) {
+          if (absMs != null && Number.isFinite(absMs)) {
+            const delta = finishEntry.ms - absMs;
             if (Number.isFinite(delta) && delta >= 0) {
               total = delta;
             } else {
               const startEntry = startMap.get(p.epc);
-              if (!startEntry?.ms) return;
-              total = finishEntry.ms - startEntry.ms;
+              if (startEntry?.ms) total = finishEntry.ms - startEntry.ms;
+            }
+          } else if (timeOnly) {
+            const builtOverride = buildOverrideFromFinishDate(finishEntry.ms, timeOnly);
+            if (builtOverride != null) {
+              const delta = finishEntry.ms - builtOverride;
+              if (Number.isFinite(delta) && delta >= 0) {
+                total = delta;
+              } else {
+                const startEntry = startMap.get(p.epc);
+                if (startEntry?.ms) total = finishEntry.ms - startEntry.ms;
+              }
+            } else {
+              const startEntry = startMap.get(p.epc);
+              if (startEntry?.ms) total = finishEntry.ms - startEntry.ms;
             }
           } else {
             const startEntry = startMap.get(p.epc);
-            if (!startEntry?.ms) return;
-            total = finishEntry.ms - startEntry.ms;
+            if (startEntry?.ms) total = finishEntry.ms - startEntry.ms;
           }
-        } else {
-          const startEntry = startMap.get(p.epc);
-          if (!startEntry?.ms) return;
-          total = finishEntry.ms - startEntry.ms;
         }
 
-        if (!Number.isFinite(total) || total == null || total < 0) return;
-
         const isDQ = !!dqData[p.epc];
-        const isDNF = cutoffMs != null && total > cutoffMs;
+        const isDNS = !!dnsData[p.epc];
+        const isManualDNF = !!dnfData[p.epc];
+        const isCalculatedDNF = cutoffMs != null && total != null && total > cutoffMs;
+        const finalIsDNF = isManualDNF || isCalculatedDNF;
 
         baseRows.push({
           rank: null,
@@ -348,9 +357,9 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
           gender: p.gender,
           category: p.category || p.sourceCategoryKey,
           sourceCategoryKey: p.sourceCategoryKey,
-          finishTimeRaw: extractTimeOfDay(finishEntry.raw),
-          totalTimeMs: total,
-          totalTimeDisplay: isDQ ? "DSQ" : isDNF ? "DNF" : formatDuration(total),
+          finishTimeRaw: finishEntry?.raw ? extractTimeOfDay(finishEntry.raw) : "-",
+          totalTimeMs: total ?? 0,
+          totalTimeDisplay: isDQ ? "DSQ" : isDNS ? "DNS" : finalIsDNF ? "DNF" : (total != null ? formatDuration(total) : "--:--"),
           epc: p.epc,
         });
       });
@@ -675,11 +684,13 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
 
     const price = parseInt(newCategoryPrice) || 0;
     const quota = parseInt(newCategoryQuota) || 0;
-    const updated = [...categories, { name: trimmed, price, quota, isHidden: false }];
+    const distanceKm = parseFloat(newCategoryDistance) || null;
+    const updated = [...categories, { name: trimmed, price, quota, isHidden: false, isClosed: false, distanceKm }];
     await saveCategories(updated);
     setNewCategory('');
     setNewCategoryPrice('');
     setNewCategoryQuota('');
+    setNewCategoryDistance('');
   };
 
   const removeCategory = async (catName: string) => {
@@ -698,8 +709,44 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
     setCategories(updated);
   };
 
+  const updateCategoryDistance = (catName: string, distanceKm: number | null) => {
+    const updated = categories.map(c => c.name === catName ? { ...c, distanceKm } : c);
+    setCategories(updated);
+  };
+
   const toggleCategoryHidden = async (catName: string) => {
     const updated = categories.map(c => c.name === catName ? { ...c, isHidden: !c.isHidden } : c);
+    setCategories(updated);
+    await saveCategories(updated);
+  };
+
+  const toggleCategoryClosed = async (catName: string) => {
+    const updated = categories.map(c => c.name === catName ? { ...c, isClosed: !c.isClosed } : c);
+    setCategories(updated);
+    await saveCategories(updated);
+  };
+
+  const handleMoveUp = async (index: number) => {
+    if (index === 0) return;
+    const updated = [...categories];
+    [updated[index - 1], updated[index]] = [updated[index], updated[index - 1]];
+    setCategories(updated);
+    await saveCategories(updated);
+  };
+
+  const handleMoveDown = async (index: number) => {
+    if (index === categories.length - 1) return;
+    const updated = [...categories];
+    [updated[index], updated[index + 1]] = [updated[index + 1], updated[index]];
+    setCategories(updated);
+    await saveCategories(updated);
+  };
+
+  const handleMoveToTop = async (index: number) => {
+    if (index === 0) return;
+    const updated = [...categories];
+    const item = updated.splice(index, 1)[0];
+    updated.unshift(item);
     setCategories(updated);
     await saveCategories(updated);
   };
@@ -792,7 +839,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
     }
   };
 
-  const saveCategories = async (cats: Array<{ name: string; price: number; quota: number; isHidden?: boolean }>) => {
+  const saveCategories = async (cats: Array<{ name: string; price: number; quota: number; isHidden?: boolean; isClosed?: boolean; distanceKm?: number | null }>) => {
     setSavingCategories(true);
     try {
       const res = await fetch(`/api/categories?eventId=${eventId}`, {
@@ -958,10 +1005,23 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
         finalStr = `${today} ${t}.000`;
       }
 
+      // Parse local time explicitly to avoid UTC-shifting bugs in browsers
+      let isoString = null;
+      if (finalStr) {
+        const [datePart, timePart] = finalStr.split(' ');
+        const [YYYY, MM, DD] = datePart.split('-');
+        const [hh, mm, ss] = timePart.split(':');
+        const [sec, ms] = ss.split('.');
+        
+        // This creates a Date in the browser's local timezone
+        const d = new Date(Number(YYYY), Number(MM) - 1, Number(DD), Number(hh), Number(mm), Number(sec), Number(ms || 0));
+        isoString = d.toISOString();
+      }
+
       const manualRes = await fetch(`/api/manual-start?eventId=${eventId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ manualStartTime: finalStr || null }),
+        body: JSON.stringify({ manualStartTime: isoString }),
       });
       if (!manualRes.ok) throw new Error("Gagal menyimpan waktu start.");
       setManualStartTime(finalStr);
@@ -985,7 +1045,43 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
       await fetch('/api/runner-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId, epc, bib, isDQ: nextVal, isHidden: !!hiddenMap[epc] })
+        body: JSON.stringify({ eventId, epc, bib, isDQ: nextVal, isDNS: !!dnsMap[epc], isDNF: !!dnfMap[epc], isHidden: !!hiddenMap[epc] })
+      });
+    } catch (e) { console.error(e); }
+
+    bumpDataVersion();
+  };
+
+  // Toggle DNS
+  const toggleDNS = async (epc: string, bib: string) => {
+    const nextVal = !dnsMap[epc];
+    const next = { ...dnsMap, [epc]: nextVal };
+    if (!nextVal) delete next[epc];
+    setDnsMap(next);
+
+    try {
+      await fetch('/api/runner-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId, epc, bib, isDQ: !!dqMap[epc], isDNS: nextVal, isDNF: !!dnfMap[epc], isHidden: !!hiddenMap[epc] })
+      });
+    } catch (e) { console.error(e); }
+
+    bumpDataVersion();
+  };
+
+  // Toggle DNF
+  const toggleDNF = async (epc: string, bib: string) => {
+    const nextVal = !dnfMap[epc];
+    const next = { ...dnfMap, [epc]: nextVal };
+    if (!nextVal) delete next[epc];
+    setDnfMap(next);
+
+    try {
+      await fetch('/api/runner-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ eventId, epc, bib, isDQ: !!dqMap[epc], isDNS: !!dnsMap[epc], isDNF: nextVal, isHidden: !!hiddenMap[epc] })
       });
     } catch (e) { console.error(e); }
 
@@ -1002,7 +1098,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
       await fetch('/api/runner-status', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId, epc, bib, isDQ: !!dqMap[epc], isHidden: nextVal })
+        body: JSON.stringify({ eventId, epc, bib, isDQ: !!dqMap[epc], isDNS: !!dnsMap[epc], isDNF: !!dnfMap[epc], isHidden: nextVal })
       });
     } catch (e) { console.error(e); }
 
@@ -1094,6 +1190,28 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
         (r.name || "").toLowerCase().includes(query)
     );
   }, [dqSearch, allRows]);
+
+  // Filter rows for DNS tab
+  const filteredDnsRows = useMemo(() => {
+    const query = dnsSearch.trim().toLowerCase();
+    if (!query) return allRows;
+    return allRows.filter(
+      (r) =>
+        (r.bib || "").toLowerCase().includes(query) ||
+        (r.name || "").toLowerCase().includes(query)
+    );
+  }, [dnsSearch, allRows]);
+
+  // Filter rows for DNF tab
+  const filteredDnfRows = useMemo(() => {
+    const query = dnfSearch.trim().toLowerCase();
+    if (!query) return allRows;
+    return allRows.filter(
+      (r) =>
+        (r.bib || "").toLowerCase().includes(query) ||
+        (r.name || "").toLowerCase().includes(query)
+    );
+  }, [dnfSearch, allRows]);
 
   const metaByKind: Partial<Record<CsvKind, { filename: string; updatedAt: number; rows: number }>> = {};
   csvMeta.forEach((x) => {
@@ -1213,7 +1331,19 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
           className={`detail-tab whitespace-nowrap ${activeTab === 'dq' ? 'active' : ''}`}
           onClick={() => setActiveTab('dq')}
         >
-          DQ / DNF
+          DSQ
+        </button>
+        <button
+          className={`detail-tab whitespace-nowrap ${activeTab === 'dns' ? 'active' : ''}`}
+          onClick={() => setActiveTab('dns')}
+        >
+          DNS
+        </button>
+        <button
+          className={`detail-tab whitespace-nowrap ${activeTab === 'dnf' ? 'active' : ''}`}
+          onClick={() => setActiveTab('dnf')}
+        >
+          DNF
         </button>
         <button
           className={`detail-tab whitespace-nowrap ${activeTab === 'penalty' ? 'active' : ''}`}
@@ -1682,6 +1812,16 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
               onChange={(e) => setNewCategoryQuota(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && addCategory()}
             />
+            <div className="flex-1">
+              <input
+                type="number"
+                step="0.001"
+                className="search w-full"
+                placeholder="Jarak (km) opsional"
+                value={newCategoryDistance}
+                onChange={(e) => setNewCategoryDistance(e.target.value)}
+              />
+            </div>
             <button className="btn w-full sm:w-auto" onClick={addCategory} disabled={!newCategory.trim()}>
               + Add Category
             </button>
@@ -1696,6 +1836,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
                   <th>Category Name</th>
                   <th style={{ width: 140 }}>Harga (Rp)</th>
                   <th style={{ width: 100 }}>Kuota</th>
+                  <th style={{ width: 100 }}>Jarak (km)</th>
                   <th style={{ width: 80 }}>Sold</th>
                   <th style={{ width: 100 }}>Actions</th>
                 </tr>
@@ -1729,24 +1870,66 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
                           onChange={(e) => updateCategoryQuota(cat.name, parseInt(e.target.value) || 0)}
                         />
                       </td>
+                      <td>
+                        <input
+                          className="search text-right"
+                          style={{ width: 90 }}
+                          type="number"
+                          step="0.001"
+                          value={cat.distanceKm || ''}
+                          placeholder="Auto"
+                          onChange={(e) => updateCategoryDistance(cat.name, parseFloat(e.target.value) || null)}
+                        />
+                      </td>
                       <td className="text-center font-bold text-red-600">
                         {(cat as any).sold || 0}
                       </td>
                       <td>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 text-xl items-center">
                           <button
-                            className="btn ghost text-sm px-2 py-1"
-                            style={{ color: cat.isHidden ? '#10b981' : '#f59e0b' }}
+                            title={cat.isHidden ? "Show in public pages" : "Hide from public pages"}
+                            className="btn ghost p-1 text-gray-500 hover:text-gray-900"
                             onClick={() => toggleCategoryHidden(cat.name)}
                           >
-                            {cat.isHidden ? 'Show' : 'Hide'}
+                            {cat.isHidden ? <EyeOff size={18} /> : <Eye size={18} />}
                           </button>
                           <button
-                            className="btn ghost text-sm px-2 py-1"
-                            style={{ color: '#dc2626' }}
+                            title={cat.isClosed ? "Open category for registration" : "Close category for registration"}
+                            className="btn ghost p-1 text-gray-500 hover:text-gray-900"
+                            onClick={() => toggleCategoryClosed(cat.name)}
+                          >
+                            {cat.isClosed ? <Lock size={18} /> : <Unlock size={18} />}
+                          </button>
+                          <div className="flex flex-col gap-1 border-l border-r px-2 border-gray-200">
+                            <button
+                              className="btn ghost p-0 leading-none text-gray-500 hover:text-blue-600 disabled:opacity-20"
+                              disabled={index === 0}
+                              onClick={() => handleMoveUp(index)}
+                            >
+                              <ArrowUp size={14} strokeWidth={3} />
+                            </button>
+                            <button
+                              className="btn ghost p-0 leading-none text-gray-500 hover:text-blue-600 disabled:opacity-20"
+                              disabled={index === categories.length - 1}
+                              onClick={() => handleMoveDown(index)}
+                            >
+                              <ArrowDown size={14} strokeWidth={3} />
+                            </button>
+                          </div>
+                          <button
+                            title="Move to top"
+                            className="btn ghost p-1 text-gray-500 hover:text-blue-600 disabled:opacity-20"
+                            disabled={index === 0}
+                            onClick={() => handleMoveToTop(index)}
+                          >
+                            <ChevronsUp size={18} />
+                          </button>
+                          <button
+                            title="Remove Category"
+                            className="btn ghost p-1 ml-auto text-red-500 hover:text-red-700"
                             onClick={() => removeCategory(cat.name)}
                           >
-                            Remove
+                            <Trash2 size={18} />
                           </button>
                         </div>
                       </td>
@@ -1769,20 +1952,51 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
                       <span className="font-medium text-gray-900">{cat.name}</span>
                       <span className="text-xs text-gray-400 ml-2">#{index + 1}</span>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 text-lg items-center">
                       <button
-                        className="btn ghost text-sm"
-                        style={{ color: cat.isHidden ? '#10b981' : '#f59e0b' }}
+                        title={cat.isHidden ? "Show in public pages" : "Hide from public pages"}
+                        className="btn ghost p-1 text-gray-500"
                         onClick={() => toggleCategoryHidden(cat.name)}
                       >
-                        {cat.isHidden ? 'Show' : 'Hide'}
+                        {cat.isHidden ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                       <button
-                        className="btn ghost text-sm"
-                        style={{ color: '#dc2626' }}
+                        title={cat.isClosed ? "Open category for registration" : "Close category for registration"}
+                        className="btn ghost p-1 text-gray-500"
+                        onClick={() => toggleCategoryClosed(cat.name)}
+                      >
+                        {cat.isClosed ? <Lock size={18} /> : <Unlock size={18} />}
+                      </button>
+                      
+                      <div className="flex flex-col gap-1 border-l border-r px-2 border-gray-200">
+                        <button
+                          className="btn ghost p-0 disabled:opacity-20 text-gray-500"
+                          disabled={index === 0}
+                          onClick={() => handleMoveUp(index)}
+                        >
+                          <ArrowUp size={14} strokeWidth={3} />
+                        </button>
+                        <button
+                          className="btn ghost p-0 disabled:opacity-20 text-gray-500"
+                          disabled={index === categories.length - 1}
+                          onClick={() => handleMoveDown(index)}
+                        >
+                          <ArrowDown size={14} strokeWidth={3} />
+                        </button>
+                      </div>
+
+                      <button
+                        className="btn ghost p-1 disabled:opacity-20 text-gray-500"
+                        disabled={index === 0}
+                        onClick={() => handleMoveToTop(index)}
+                      >
+                        <ChevronsUp size={18} />
+                      </button>
+                      <button
+                        className="btn ghost p-1 text-red-500 ml-auto"
                         onClick={() => removeCategory(cat.name)}
                       >
-                        Remove
+                        <Trash2 size={18} />
                       </button>
                     </div>
                   </div>
@@ -2038,9 +2252,9 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="time"
-                  step="1"
+                  step="0.001"
                   className="search flex-1 text-center font-bold text-xl py-3 px-4"
-                  value={manualStartTime ? extractTimeOfDay(manualStartTime).split('.')[0] : ""}
+                  value={manualStartTime ? extractTimeOfDay(manualStartTime) : ""}
                   onChange={(e) => setManualStartTime(e.target.value)}
                 />
                 <button
@@ -2234,6 +2448,256 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
 
           <div className="mt-4 p-3 bg-blue-50 border border-blue-400 rounded-lg text-blue-900 text-sm">
             <strong>Info:</strong> Total {Object.values(dqMap).filter(Boolean).length} peserta di-DSQ.
+          </div>
+        </div>
+      )}
+
+      {/* DNS Tab */}
+      {activeTab === 'dns' && (
+        <div className="card">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+            <div>
+              <h2 className="section-title">Did Not Start (Manual)</h2>
+              <div className="subtle text-sm">
+                Toggle DNS per runner (by EPC). DNS tampil di tabel tapi tanpa rank.
+              </div>
+            </div>
+            <input
+              className="search w-full sm:w-64"
+              placeholder="Search BIB / Name…"
+              value={dnsSearch}
+              onChange={(e) => setDnsSearch(e.target.value)}
+            />
+          </div>
+
+          <div className="hidden md:block table-wrap">
+            <table className="f1-table">
+              <thead>
+                <tr>
+                  <th className="col-bib">BIB</th>
+                  <th>NAME</th>
+                  <th className="col-gender">GENDER</th>
+                  <th className="col-cat">CATEGORY</th>
+                  <th style={{ width: 120 }}>STATUS</th>
+                  <th style={{ width: 120 }}>ACTION</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredDnsRows.map((r) => {
+                  const isDNS = !!dnsMap[r.epc];
+                  return (
+                    <tr key={r.epc} className="row-hover">
+                      <td className="mono">{r.bib}</td>
+                      <td className="name-cell">{r.name}</td>
+                      <td>{r.gender}</td>
+                      <td>
+                        <div>{r.category}</div>
+                        {r.ageCategory && (
+                          <div className="text-[10px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded mt-1 inline-block">
+                            {r.ageCategory}
+                          </div>
+                        )}
+                      </td>
+                      <td className="mono strong">{isDNS ? "DNS" : "OK"}</td>
+                      <td>
+                        <div className="flex gap-1">
+                          <button
+                            className="btn ghost sm"
+                            onClick={() => toggleDNS(r.epc, r.bib || '')}
+                          >
+                            {isDNS ? "Undo DNS" : "Mark DNS"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {filteredDnsRows.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="empty">
+                      {allRows.length === 0
+                        ? "Upload data CSV terlebih dahulu di tab Data Upload."
+                        : "Tidak ada peserta yang cocok."}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="md:hidden space-y-3">
+            {filteredDnsRows.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                {allRows.length === 0
+                  ? "Upload data CSV terlebih dahulu di tab Data Upload."
+                  : "Tidak ada peserta yang cocok."}
+              </div>
+            ) : (
+              filteredDnsRows.map((r) => {
+                const isDNS = !!dnsMap[r.epc];
+                return (
+                  <div key={r.epc} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <div className="font-semibold text-gray-900">{r.name}</div>
+                        <div className="text-sm text-gray-500">
+                          <span className="mono">BIB: {r.bib}</span>
+                          <span className="mx-2">·</span>
+                          <span>{r.gender}</span>
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {r.category}
+                        </div>
+                      </div>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-bold ${isDNS
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-green-100 text-green-700'
+                          }`}
+                      >
+                        {isDNS ? "DNS" : "OK"}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        className={`btn w-full text-xs font-bold uppercase ${isDNS ? '' : 'ghost'}`}
+                        onClick={() => toggleDNS(r.epc, r.bib || '')}
+                      >
+                        {isDNS ? "Undo DNS" : "Mark DNS"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-400 rounded-lg text-blue-900 text-sm">
+            <strong>Info:</strong> Total {Object.values(dnsMap).filter(Boolean).length} peserta di-DNS.
+          </div>
+        </div>
+      )}
+
+      {/* DNF Tab */}
+      {activeTab === 'dnf' && (
+        <div className="card">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+            <div>
+              <h2 className="section-title">Did Not Finish (Manual)</h2>
+              <div className="subtle text-sm">
+                Toggle DNF per runner (by EPC). DNF tampil di tabel tapi tanpa rank.
+              </div>
+            </div>
+            <input
+              className="search w-full sm:w-64"
+              placeholder="Search BIB / Name…"
+              value={dnfSearch}
+              onChange={(e) => setDnfSearch(e.target.value)}
+            />
+          </div>
+
+          <div className="hidden md:block table-wrap">
+            <table className="f1-table">
+              <thead>
+                <tr>
+                  <th className="col-bib">BIB</th>
+                  <th>NAME</th>
+                  <th className="col-gender">GENDER</th>
+                  <th className="col-cat">CATEGORY</th>
+                  <th style={{ width: 120 }}>STATUS</th>
+                  <th style={{ width: 120 }}>ACTION</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredDnfRows.map((r) => {
+                  const isDNF = !!dnfMap[r.epc];
+                  return (
+                    <tr key={r.epc} className="row-hover">
+                      <td className="mono">{r.bib}</td>
+                      <td className="name-cell">{r.name}</td>
+                      <td>{r.gender}</td>
+                      <td>
+                        <div>{r.category}</div>
+                        {r.ageCategory && (
+                          <div className="text-[10px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded mt-1 inline-block">
+                            {r.ageCategory}
+                          </div>
+                        )}
+                      </td>
+                      <td className="mono strong">{isDNF ? "DNF" : "OK"}</td>
+                      <td>
+                        <div className="flex gap-1">
+                          <button
+                            className="btn ghost sm"
+                            onClick={() => toggleDNF(r.epc, r.bib || '')}
+                          >
+                            {isDNF ? "Undo DNF" : "Mark DNF"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {filteredDnfRows.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="empty">
+                      {allRows.length === 0
+                        ? "Upload data CSV terlebih dahulu di tab Data Upload."
+                        : "Tidak ada peserta yang cocok."}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="md:hidden space-y-3">
+            {filteredDnfRows.length === 0 ? (
+              <div className="text-center text-gray-500 py-8">
+                {allRows.length === 0
+                  ? "Upload data CSV terlebih dahulu di tab Data Upload."
+                  : "Tidak ada peserta yang cocok."}
+              </div>
+            ) : (
+              filteredDnfRows.map((r) => {
+                const isDNF = !!dnfMap[r.epc];
+                return (
+                  <div key={r.epc} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <div className="font-semibold text-gray-900">{r.name}</div>
+                        <div className="text-sm text-gray-500">
+                          <span className="mono">BIB: {r.bib}</span>
+                          <span className="mx-2">·</span>
+                          <span>{r.gender}</span>
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          {r.category}
+                        </div>
+                      </div>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-bold ${isDNF
+                          ? 'bg-orange-100 text-orange-800'
+                          : 'bg-green-100 text-green-700'
+                          }`}
+                      >
+                        {isDNF ? "DNF" : "OK"}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        className={`btn w-full text-xs font-bold uppercase ${isDNF ? '' : 'ghost'}`}
+                        onClick={() => toggleDNF(r.epc, r.bib || '')}
+                      >
+                        {isDNF ? "Undo DNF" : "Mark DNF"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-400 rounded-lg text-blue-900 text-sm">
+            <strong>Info:</strong> Total {Object.values(dnfMap).filter(Boolean).length} peserta di-DNF.
           </div>
         </div>
       )}
@@ -2829,6 +3293,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
                         location: eventData.location,
                         isLoopMode: eventData.isLoopMode,
                         minLapTimeMs: eventData.minLapTimeMs,
+                        timezoneOffset: eventData.timezoneOffset,
                         content: {
                           ...(eventData.content || {}),
                           about: homeContent.about || eventData.content?.about || '',
@@ -2925,6 +3390,15 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
                     onChange={(e) => setEventData({ ...eventData, location: e.target.value })}
                   />
                 </div>
+                {/* <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">GMT Timezone Offset (Hours)</label>
+                  <input
+                    type="number"
+                    className="search w-full"
+                    value={eventData?.timezoneOffset ?? 7}
+                    onChange={(e) => setEventData({ ...eventData, timezoneOffset: parseInt(e.target.value) || 0 })}
+                  />
+                </div> */}
               </div>
             </div>
 

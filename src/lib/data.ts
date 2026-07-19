@@ -179,7 +179,7 @@ export async function loadMasterParticipants(
 
 export type TimeEntry = { ms: number | null; raw: string };
 
-export async function loadTimesMap(kind: "start" | "finish", eventId: string = 'default'): Promise<Map<string, TimeEntry>> {
+export async function loadTimesMap(kind: "start" | "finish", eventId: string = 'default', tzOffset?: number): Promise<Map<string, TimeEntry>> {
   const text = await getCsvTextOptional(kind, eventId);
   if (!text) {
     return new Map();
@@ -204,7 +204,8 @@ export async function loadTimesMap(kind: "start" | "finish", eventId: string = '
     const rawStr = String(r[timesIdx] ?? "").trim();
     if (!rawStr) return;
 
-    const parsed = parseTimeToMs(rawStr);
+    // Use default tzOffset = 7 for Indonesian events if not provided by caller
+    const parsed = parseTimeToMs(rawStr, tzOffset ?? 7);
     const entry: TimeEntry = { ms: parsed.ms, raw: rawStr };
 
     const existing = map.get(epc);

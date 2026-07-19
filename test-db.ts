@@ -1,10 +1,7 @@
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import { query } from './src/lib/db';
 async function run() {
-  const mf = await prisma.manualFinish.findMany();
-  console.log("ManualFinish:", mf);
-  const ms = await prisma.manualStartBib.findMany();
-  console.log("ManualStartBib:", ms);
+  const events = await query('SELECT slug, id FROM Event');
+  console.log('Events:', events);
   process.exit(0);
 }
 run();

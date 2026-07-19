@@ -11,9 +11,10 @@ const NAV_LINKS = [
 
 interface LandingNavbarProps {
   customLinks?: Array<{ label: string, action: string, to: string }>;
+  isDarkBg?: boolean;
 }
 
-export default function LandingNavbar({ customLinks }: LandingNavbarProps) {
+export default function LandingNavbar({ customLinks, isDarkBg = false }: LandingNavbarProps) {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const activeLinks = customLinks || NAV_LINKS;
@@ -42,23 +43,23 @@ export default function LandingNavbar({ customLinks }: LandingNavbarProps) {
           duration: 1.2,
           ease: [0.16, 1, 0.3, 1],
         }}
-        className="absolute top-0 left-0 w-full z-50 px-4 py-3 bg-transparent"
+        className="absolute top-0 left-0 w-full z-[100] px-4 pb-3 pt-[max(env(safe-area-inset-top,20px),20px)] md:pt-[max(env(safe-area-inset-top,20px),24px)] md:pb-4 bg-transparent"
       >
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           {/* Left: Logo */}
           <div className="flex items-center cursor-pointer" onClick={() => navigate("/")}>
-            <span className="text-[14px] md:text-[15px] font-extrabold tracking-tight text-slate-900">
+            <span className={`text-[14px] md:text-[15px] font-extrabold tracking-tight ${isDarkBg ? 'text-white' : 'text-slate-900'}`}>
               LUMPAT
             </span>
           </div>
 
           {/* Center: Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-10 text-[12px] font-medium text-slate-600 tracking-wide">
+          <div className={`hidden md:flex items-center gap-10 text-[12px] font-medium tracking-wide ${isDarkBg ? 'text-slate-300' : 'text-slate-600'}`}>
             {activeLinks.map((link) => (
               <button
                 key={link.label}
                 onClick={() => handleNav(link)}
-                className="hover:text-slate-900 transition-colors cursor-pointer bg-transparent border-none"
+                className={`transition-colors cursor-pointer bg-transparent border-none ${isDarkBg ? 'hover:text-white' : 'hover:text-slate-900'}`}
               >
                 {link.label}
               </button>
@@ -68,7 +69,7 @@ export default function LandingNavbar({ customLinks }: LandingNavbarProps) {
           {/* Mobile Hamburger */}
           <button
             onClick={() => setIsOpen((prev) => !prev)}
-            className="md:hidden flex items-center justify-center w-10 h-10 text-slate-800 cursor-pointer bg-transparent border-none relative z-[60]"
+            className={`md:hidden flex items-center justify-center w-10 h-10 cursor-pointer bg-transparent border-none relative z-[60] ${isDarkBg && !isOpen ? 'text-white' : 'text-slate-800'}`}
             aria-label="Toggle menu"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

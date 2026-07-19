@@ -94,7 +94,12 @@ export default function VerifyPage() {
                         ['Tanggal', participant.eventDate ? new Date(participant.eventDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'],
                         ['Email', participant.email],
                         ['Telepon', participant.phoneNumber],
-                        ['Gender', participant.gender === 'L' ? 'Laki-laki' : 'Perempuan'],
+                        ['Gender', (() => {
+                          const g = (participant.gender || '').trim().toLowerCase();
+                          if (['l', 'm', 'male', 'laki-laki', 'laki', 'pria'].includes(g)) return 'Laki-laki';
+                          if (['p', 'f', 'female', 'perempuan', 'wanita'].includes(g)) return 'Perempuan';
+                          return participant.gender || '-';
+                        })()],
                         ['Ukuran Baju', participant.tshirtSize || '-'],
                         ['Custom BIB', participant.bibName || '-'],
                         ['No. BIB', participant.bibNumber || '-'],

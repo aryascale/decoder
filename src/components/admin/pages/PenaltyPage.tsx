@@ -248,12 +248,13 @@ export default function PenaltyPage({ allRows, onDataVersionBump, eventId }: Pen
                         <td className="name-cell text-sm">{r.name}</td>
                         <td className="text-xs uppercase">{r.gender}</td>
                         <td className="text-xs">
-                          <div>{r.category}</div>
-                          {r.ageCategory && (
-                            <div className="text-[9px] font-bold bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded mt-1 inline-block">
-                              {r.ageCategory}
-                            </div>
+                          <div className="flex gap-2">
+                          {r.category && (
+                            <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-xs font-medium">
+                              {r.category}
+                            </span>
                           )}
+                          </div>
                         </td>
                         <td className="mono text-xs">{r.finishTimeRaw || "-"}</td>
                         <td>
@@ -379,15 +380,14 @@ export default function PenaltyPage({ allRows, onDataVersionBump, eventId }: Pen
                   <div key={r.epc} className="bg-white border border-gray-200 rounded-lg p-3 shadow-sm">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <div className="font-semibold text-gray-900">{r.name}</div>
                         <div className="text-sm text-gray-500">
                           <span className="mono font-bold">BIB: {r.bib}</span>
                           <span className="mx-2">·</span>
                           <span className="uppercase text-xs">{r.gender}</span>
                         </div>
-                        <div className="text-xs text-gray-400">
-                          {r.category}
-                          {r.ageCategory && <span className="ml-2 bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded text-[9px] font-bold">{r.ageCategory}</span>}
+                        <div className="text-gray-900 font-medium">
+                          {r.name}
+                          {r.category && <span className="ml-2 bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded text-[9px] font-bold">{r.category}</span>}
                         </div>
                         <div className="text-xs text-gray-400 mono mt-0.5">Finish: {r.finishTimeRaw || "-"}</div>
                       </div>

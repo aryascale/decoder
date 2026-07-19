@@ -15,7 +15,7 @@ const SHOWCASE_DATA = [
     desc: "Join Thousands Who Rely on Our Program—Built with ",
     descHighlight: "Experience,",
     descEnd: " Backed by Results, and Trusted by Many",
-    image: "/Assets/carousel/p1.webp",
+    image: "/Assets/carousel/p5.webp",
     name: "Lumpat Platform",
     role: "Event Management"
   },
@@ -31,7 +31,7 @@ const SHOWCASE_DATA = [
     desc: "Publish race results instantly as athletes cross with ",
     descHighlight: "sub-second",
     descEnd: " latency and precision.",
-    image: "/Assets/carousel/p2.webp",
+    image: "/Assets/landing2/result.png",
     name: "Live Timing",
     role: "Real-Time Engine"
   },
@@ -47,7 +47,7 @@ const SHOWCASE_DATA = [
     desc: "Design and share detailed 3D route maps with ",
     descHighlight: "elevation profiles",
     descEnd: " and checkpoint locations.",
-    image: "/Assets/carousel/p3.webp",
+    image: "/Assets/landing2/map start and finish.png",
     name: "Route Builder",
     role: "Map Designer"
   },
@@ -63,9 +63,9 @@ const SHOWCASE_DATA = [
     desc: "Handle complex transition zones for ",
     descHighlight: "Triathlons",
     descEnd: " and Duathlons effortlessly.",
-    image: "/Assets/carousel/p4.webp",
-    name: "Multisport Hub",
-    role: "Transition Manager"
+    image: "/Assets/About/bct3.jpg",
+    name: "Bogor City Trail",
+    role: "Official Event"
   },
   {
     tag: "05",
@@ -79,7 +79,7 @@ const SHOWCASE_DATA = [
     desc: "Build a stunning portfolio page for all your ",
     descHighlight: "past and upcoming",
     descEnd: " races and events.",
-    image: "/Assets/carousel/p5.webp",
+    image: "/Assets/landing2/Event.png",
     name: "Event Portfolio",
     role: "Brand Showcase"
   }
@@ -180,6 +180,13 @@ export default function ReferenceShowcase() {
       id="reference-showcase"
     >
       <SteppedImageClipDef />
+
+      {/* Hidden preloader for carousel images to ensure fast rendering */}
+      <div style={{ position: "absolute", width: 0, height: 0, overflow: "hidden", opacity: 0, pointerEvents: "none", zIndex: -1 }}>
+        {SHOWCASE_DATA.map((item) => (
+          <img key={`preload-${item.tag}`} src={item.image} alt="preload" />
+        ))}
+      </div>
 
       {/* ========== BACKGROUND TYPOGRAPHY ========== */}
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
@@ -355,30 +362,34 @@ export default function ReferenceShowcase() {
                   </clipPath>
                 </defs>
 
-                <foreignObject
-                  x="0" y="0" width="7303" height="9923"
-                  clipPath="url(#custom-photo-clip)"
-                >
-                  <div style={{ width: "7303px", height: "9923px", position: "relative" }}>
-                    <img
-                      src={current.image}
-                      alt={current.title}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                    />
-                    {/* Name overlay */}
-                    <div style={{
-                      position: "absolute",
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      padding: "300px 400px",
-                      background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%)",
-                    }}>
-                      <p style={{ color: "white", fontWeight: 700, fontSize: "280px", lineHeight: 1.3, margin: 0 }}>{current.name}</p>
-                      <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "200px", fontWeight: 500, margin: 0 }}>{current.role}</p>
+                <g clipPath="url(#custom-photo-clip)">
+                  <image
+                    href={current.image}
+                    x="0"
+                    y="0"
+                    width="7303"
+                    height="9923"
+                    preserveAspectRatio="xMidYMid slice"
+                  />
+                  <foreignObject
+                    x="0" y="0" width="7303" height="9923"
+                  >
+                    <div style={{ width: "7303px", height: "9923px", position: "relative" }}>
+                      {/* Name overlay */}
+                      <div style={{
+                        position: "absolute",
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        padding: "300px 400px",
+                        background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 100%)",
+                      }}>
+                        <p style={{ color: "white", fontWeight: 700, fontSize: "280px", lineHeight: 1.3, margin: 0 }}>{current.name}</p>
+                        <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "200px", fontWeight: 500, margin: 0 }}>{current.role}</p>
+                      </div>
                     </div>
-                  </div>
-                </foreignObject>
+                  </foreignObject>
+                </g>
               </svg>
             </motion.div>
           </AnimatePresence>

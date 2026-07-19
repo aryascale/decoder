@@ -15,7 +15,7 @@ export default function CategorySection({
 
   const rankedRows = useMemo(() => {
     const finishers = rows.filter(
-      (r) => r.totalTimeDisplay !== "DNF" && r.totalTimeDisplay !== "DSQ" && r.totalTimeDisplay !== "ACTIVE"
+      (r) => r.totalTimeDisplay !== "DNF" && r.totalTimeDisplay !== "DSQ" && r.totalTimeDisplay !== "ACTIVE" && r.totalTimeDisplay !== "Active"
     );
 
     const dnfs = rows
@@ -23,7 +23,7 @@ export default function CategorySection({
       .sort((a, b) => a.totalTimeMs - b.totalTimeMs);
 
     const dsqs = rows.filter((r) => r.totalTimeDisplay === "DSQ");
-    const actives = rows.filter((r) => r.totalTimeDisplay === "ACTIVE");
+    const actives = rows.filter((r) => r.totalTimeDisplay === "ACTIVE" || r.totalTimeDisplay === "Active");
 
     const rankedFinishers = [...finishers]
       .sort((a, b) => a.totalTimeMs - b.totalTimeMs)
