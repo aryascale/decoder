@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { useEvent } from "../../../contexts/EventContext";
 import { CATEGORY_KEYS } from "../../../lib/config";
 import EventDetailPage from "./EventDetailPage";
+import { ChevronDown } from "lucide-react";
 
 interface EventsPageProps {
   events: any[];
@@ -45,6 +46,8 @@ export default function EventsPage({ events, onEventsChange }: EventsPageProps) 
   const [newEventLocation, setNewEventLocation] = useState('');
   const [newEventLatitude, setNewEventLatitude] = useState('');
   const [newEventLongitude, setNewEventLongitude] = useState('');
+  const [newEventCategory, setNewEventCategory] = useState('Running');
+  const [catDropOpen, setCatDropOpen] = useState(false);
   const [newEventDescription, setNewEventDescription] = useState('');
   const [newEventActive, setNewEventActive] = useState(true);
   const [newEventStatus, setNewEventStatus] = useState<EventStatus>('upcoming');
@@ -108,6 +111,7 @@ export default function EventsPage({ events, onEventsChange }: EventsPageProps) 
           location: newEventLocation.trim(),
           latitude: newEventLatitude.trim() ? parseFloat(newEventLatitude.trim()) : null,
           longitude: newEventLongitude.trim() ? parseFloat(newEventLongitude.trim()) : null,
+          eventType: newEventCategory,
           isActive: newEventActive,
           isDraft: newEventIsDraft,
           publishAt: newEventPublishAt || null,
@@ -128,6 +132,7 @@ export default function EventsPage({ events, onEventsChange }: EventsPageProps) 
       setNewEventLocation('');
       setNewEventLatitude('');
       setNewEventLongitude('');
+      setNewEventCategory('Running');
       setNewEventDescription('');
       setNewEventActive(true);
       setNewEventIsDraft(false);
@@ -303,6 +308,37 @@ export default function EventsPage({ events, onEventsChange }: EventsPageProps) 
                   value={newEventLocation}
                   onChange={(e) => setNewEventLocation(e.target.value)}
                 />
+              </div>
+              <div className="relative">
+                <label className="block mb-2 font-medium text-sm">Event Category</label>
+                <div
+                  className="search w-full flex items-center justify-between cursor-pointer"
+                  onClick={() => setCatDropOpen(!catDropOpen)}
+                >
+                  <span>{newEventCategory}</span>
+                  <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${catDropOpen ? 'rotate-180 text-red-500' : 'text-gray-400'}`} />
+                </div>
+                
+                {catDropOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setCatDropOpen(false)} />
+                    <div className="absolute z-20 w-full mt-2 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden py-1">
+                      {["Running", "Cycling", "Triathlon", "Obstacle Course", "Walking", "Swimming", "Other"].map((cat) => (
+                        <div
+                          key={cat}
+                          onClick={() => { setNewEventCategory(cat); setCatDropOpen(false); }}
+                          className={`w-full text-left px-4 py-2.5 text-sm font-semibold transition-colors duration-150 cursor-pointer ${
+                            newEventCategory === cat
+                              ? 'bg-red-50 text-red-600'
+                              : 'text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          {cat}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
               <div className="md:col-span-2">
                 <label className="block mb-2 font-medium text-sm">

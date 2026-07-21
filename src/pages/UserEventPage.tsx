@@ -24,6 +24,7 @@ interface Event {
   eventDate?: string;
   location?: string;
   categories?: string[];
+  eventType?: string;
   status?: "upcoming" | "ongoing" | "completed";
   isActive?: boolean;
   bannerUrl?: string;
@@ -112,27 +113,16 @@ export default function UserEventPage() {
     let matchesCategory = false;
     if (activeCategory === "All Events") {
       matchesCategory = true;
-    } else if (activeCategory === "Running") {
-      matchesCategory = e.categories?.some(c => {
-        const lower = c.toLowerCase();
-        return lower.includes('run') || lower.includes('marathon') || lower.endsWith('k') || lower.includes('ultra');
-      }) ?? false;
-    } else if (activeCategory === "Cycling") {
-      matchesCategory = e.categories?.some(c => {
-        const lower = c.toLowerCase();
-        return lower.includes('cycl') || lower.includes('ride') || lower.includes('fondo') || lower.includes('bike');
-      }) ?? false;
+    } else {
+      matchesCategory = e.eventType === activeCategory;
     }
 
     return matchesSearch && matchesCategory;
   });
 
-  // Fixed Event Types instead of extracting categories
-  const categoriesList = [
-    "All Events",
-    "Running",
-    "Cycling"
-  ];
+  // Dynamic Event Types based on existing data
+  const dynamicCategories = Array.from(new Set(events.map(e => e.eventType).filter(Boolean))) as string[];
+  const categoriesList = ["All Events", ...dynamicCategories];
 
   // Upcoming events for the slider
   const upcomingEvents = events.filter((e) => e.status === "upcoming");

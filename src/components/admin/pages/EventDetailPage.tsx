@@ -13,7 +13,7 @@ import ManualStartBibPage from "./ManualStartBibPage";
 import ManualFinishBibPage from "./ManualFinishBibPage";
 import CheckpointsPage from "./CheckpointsPage";
 import AdminLiveTrackingTab from '../tabs/AdminLiveTrackingTab';
-import { Eye, EyeOff, Lock, Unlock, ArrowUp, ArrowDown, ChevronsUp, Trash2 } from 'lucide-react';
+import { Eye, EyeOff, Lock, Unlock, ArrowUp, ArrowDown, ChevronsUp, Trash2, ChevronDown } from 'lucide-react';
 
 interface EventDetailPageProps {
   eventId: string;
@@ -99,6 +99,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
   // GPX upload state
   const [uploadingGpx, setUploadingGpx] = useState(false);
   const [currentGpxPath, setCurrentGpxPath] = useState<string | null>(null);
+  const [catDropOpen, setCatDropOpen] = useState(false);
 
   // Timing state
   const [cutoffHours, setCutoffHours] = useState("");
@@ -3289,6 +3290,7 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
                         isDraft: eventData.isDraft,
                         publishAt: eventData.publishAt,
                         name: eventData.name,
+                        eventType: eventData.eventType || 'Running',
                         eventDate: eventData.eventDate,
                         location: eventData.location,
                         isLoopMode: eventData.isLoopMode,
@@ -3380,6 +3382,37 @@ export default function EventDetailPage({ eventId, eventSlug, eventName, onBack 
                     />
                     <span className="text-sm font-medium text-gray-700">Tanggal Belum Fix (Tampilkan Bulan & Tahun Saja)</span>
                   </label>
+                </div>
+                <div className="relative">
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Event Category</label>
+                  <div
+                    className="search w-full flex items-center justify-between cursor-pointer"
+                    onClick={() => setCatDropOpen(!catDropOpen)}
+                  >
+                    <span>{eventData?.eventType || 'Running'}</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${catDropOpen ? 'rotate-180 text-red-500' : 'text-gray-400'}`} />
+                  </div>
+                  
+                  {catDropOpen && (
+                    <>
+                      <div className="fixed inset-0 z-10" onClick={() => setCatDropOpen(false)} />
+                      <div className="absolute z-20 w-full mt-2 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden py-1">
+                        {["Running", "Cycling", "Triathlon", "Obstacle Course", "Walking", "Swimming", "Other"].map((cat) => (
+                          <div
+                            key={cat}
+                            onClick={() => { setEventData({ ...eventData, eventType: cat }); setCatDropOpen(false); }}
+                            className={`w-full text-left px-4 py-2.5 text-sm font-semibold transition-colors duration-150 cursor-pointer ${
+                              eventData?.eventType === cat
+                                ? 'bg-red-50 text-red-600'
+                                : 'text-gray-700 hover:bg-gray-50'
+                            }`}
+                          >
+                            {cat}
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">Location</label>

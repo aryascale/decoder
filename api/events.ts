@@ -23,6 +23,7 @@ function formatEvent(event: any) {
     location: event.location || '',
     latitude: event.latitude || undefined,
     longitude: event.longitude || undefined,
+    eventType: event.eventType || 'Running',
     status: event.status || 'upcoming',
     gpxFile: event.gpxFile || undefined,
     logoUrl: (event.logoUrl && event.logoUrl !== 'null') ? event.logoUrl : undefined,
@@ -129,7 +130,7 @@ export default async function handler(req: any) {
     }
 
     if (req.httpMethod === 'POST') {
-      const { name, description, eventDate, location, latitude, longitude, isActive, isDraft, publishAt, categories, isLoopMode, minLapTimeMs } = parseBody(req);
+      const { name, description, eventType, eventDate, location, latitude, longitude, isActive, isDraft, publishAt, categories, isLoopMode, minLapTimeMs } = parseBody(req);
       if (!name || !eventDate) return errorResponse('Name and eventDate are required', 400);
 
       const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -143,8 +144,8 @@ export default async function handler(req: any) {
 
       const eventIdNew = crypto.randomUUID();
       await query(
-        'INSERT INTO Event (id, name, slug, description, eventDate, location, latitude, longitude, isActive, isDraft, publishAt, status, logoUrl, bannerUrl, createdAt, updatedAt, isLoopMode, minLapTimeMs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?)',
-        [eventIdNew, name, slug, description || null, new Date(eventDate), location || null, latitude || null, longitude || null, isActive ?? true, isDraft ?? false, publishAt ? new Date(publishAt) : null, 'upcoming', null, null, isLoopMode ?? false, minLapTimeMs != null ? minLapTimeMs : 300000]
+        'INSERT INTO Event (id, name, slug, description, eventType, eventDate, location, latitude, longitude, isActive, isDraft, publishAt, status, logoUrl, bannerUrl, createdAt, updatedAt, isLoopMode, minLapTimeMs) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?, ?)',
+        [eventIdNew, name, slug, description || null, eventType || 'Running', new Date(eventDate), location || null, latitude || null, longitude || null, isActive ?? true, isDraft ?? false, publishAt ? new Date(publishAt) : null, 'upcoming', null, null, isLoopMode ?? false, minLapTimeMs != null ? minLapTimeMs : 300000]
       );
 
       const defaultCategories = categories || [];
@@ -195,6 +196,7 @@ export default async function handler(req: any) {
 
       if (body.name !== undefined) { fields.push('name = ?'); values.push(body.name); }
       if (body.description !== undefined) { fields.push('description = ?'); values.push(body.description); }
+      if (body.eventType !== undefined) { fields.push('eventType = ?'); values.push(body.eventType); }
       if (body.eventDate !== undefined) { fields.push('eventDate = ?'); values.push(new Date(body.eventDate)); }
       if (body.location !== undefined) { fields.push('location = ?'); values.push(body.location); }
       if (body.latitude !== undefined) { fields.push('latitude = ?'); values.push(body.latitude); }
