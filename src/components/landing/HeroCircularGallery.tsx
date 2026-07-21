@@ -2,19 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
-// ─── Local Hero Images ───
 const GALLERY_IMAGES = [
-  "/Assets/landing2/hero/2.webp",
-  "/Assets/landing2/hero/2.webp",
-  "/Assets/landing2/hero/3.webp",
-  "/Assets/landing2/hero/4.webp",
-  "/Assets/landing2/hero/5.webp",
-  "/Assets/landing2/hero/6.webp",
-  "/Assets/landing2/hero/7.webp",
-  "/Assets/landing2/hero/8.webp",
-  "/Assets/landing2/hero/9.webp",
-  "/Assets/landing2/hero/10.webp",
-  "/Assets/landing2/hero/11.webp",
   "/Assets/landing2/hero/1.webp",
   "/Assets/landing2/hero/2.webp",
   "/Assets/landing2/hero/3.webp",
@@ -26,8 +14,19 @@ const GALLERY_IMAGES = [
   "/Assets/landing2/hero/9.webp",
   "/Assets/landing2/hero/10.webp",
   "/Assets/landing2/hero/11.webp",
-  "/Assets/landing2/hero/1.webp",
-  "/Assets/landing2/hero/2.webp",
+  "/Assets/landing2/hero/12.JPG",
+  "/Assets/landing2/hero/13.JPG",
+  "/Assets/landing2/hero/14.jpeg",
+  "/Assets/landing2/hero/15.jpeg",
+  "/Assets/landing2/hero/16.jpeg",
+  "/Assets/landing2/hero/17.JPG",
+  "/Assets/landing2/hero/18.JPG",
+  "/Assets/landing2/hero/19.JPG",
+  "/Assets/landing2/hero/20.jpeg",
+  "/Assets/landing2/hero/21.jpeg",
+  "/Assets/landing2/hero/22.jpg",
+  "/Assets/landing2/hero/23.jpeg",
+  "/Assets/landing2/hero/24.jpeg",
 ];
 
 const TOTAL_CARDS = 24;
@@ -311,7 +310,7 @@ export default function HeroCircularGallery() {
                 marginBottom: isMobile ? 4 : 12,
               }}
             >
-              The future of
+              The Future of
             </span>
             <span
               className="font-semibold leading-[1.1] text-center"
@@ -320,22 +319,22 @@ export default function HeroCircularGallery() {
                 color: "#0F172A",
               }}
             >
-              Running Events
+              Sports Technology.
             </span>
           </h1>
 
           {/* Sub-headline */}
           <p
-            className="font-medium leading-relaxed text-center"
+            className="font-medium leading-relaxed text-center flex flex-col gap-1"
             style={{
               fontSize: isMobile ? 11 : 15,
               color: "#64748B",
-              maxWidth: isMobile ? 220 : 420,
+              maxWidth: isMobile ? 280 : 540,
               marginBottom: isMobile ? 24 : 36,
             }}
           >
-            Satu ekosistem digital untuk manajemen registrasi,
-            pengambilan racepack QR, hingga akurasi live timing kit iZT.
+            <span className="font-semibold text-slate-700">More than timing. A complete race experience.</span>
+            <span>Everything you need to manage a successful event including registration, race pack collection, digital bib check in, attendance management, and industry leading race timing.</span>
           </p>
 
           {/* CTA Buttons */}

@@ -637,7 +637,7 @@ export default function UserEventPage() {
 
             <div className="border-t border-gray-200 pt-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div className="flex flex-col gap-2">
-                <p className="text-gray-400">Hak cipta © {new Date().getFullYear()} IJT — Indonesia Timing System. Seluruh hak cipta dilindungi undang-undang.</p>
+                <p className="text-gray-400">Hak cipta © {new Date().getFullYear()} IZT Race Technology — Indonesia Timing System. Seluruh hak cipta dilindungi undang-undang.</p>
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-gray-500">
                   <a href="/#privacy" className="hover:text-gray-900 hover:underline transition-colors">Kebijakan Privasi</a>
                   <span className="hidden md:inline text-gray-300">|</span>

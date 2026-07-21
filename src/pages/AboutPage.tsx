@@ -57,7 +57,7 @@ export default function AboutPage() {
 
   // Dot gauge values for Card 3
   const dotGauges = [
-    { label: "Waterproof Mat", value: 10 },
+    { label: "Waterproof Technology", value: 10 },
     { label: "Detection Density", value: 9 },
     { label: "Sync Accuracy", value: 10 }
   ];
@@ -201,7 +201,7 @@ export default function AboutPage() {
                 </svg>
               </div>
               <p className="text-base md:text-lg font-light tracking-wide text-slate-100 leading-snug">
-                Professional UHF timing decoders with dual-frequency synchronization & real-time telemetry — track splits in <span className="text-[#FF383C] font-normal">perfect accuracy</span>, in any weather.
+                Engineered with dual frequency synchronization and real time telemetry, our professional UHF timing decoders deliver precise split tracking in every condition.
               </p>
             </div>
 
@@ -304,9 +304,9 @@ export default function AboutPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
             {[
-              { num: "50,000+", desc: "Tracked Athletes" },
+              { num: "1,000+", desc: "Tracked Athletes" },
               { num: "99.9%", desc: "Detections Accuracy Rate" },
-              { num: "200+", desc: "Managed Events" },
+              { num: "10+", desc: "Managed Events" },
               { num: "0.2s", desc: "Leaderboard Latency" }
             ].map((stat, i) => (
               <div key={i} className="flex flex-col items-center">
